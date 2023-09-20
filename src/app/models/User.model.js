@@ -26,9 +26,9 @@ const UserSchema = new mongoose.Schema(
     fullName: {
       type: String,
       trim: true,
-      minLength: [2, "Fullname is at least 2 characters"],
-      maxLength: [20, "Fullname is maximum 20 characters"],
-      require: [true, "Fullname is required field"],
+      minLength: [2, "Full name is at least 2 characters"],
+      maxLength: [30, "Full name is maximum 30 characters"],
+      require: [true, "Full name is required field"],
     },
     username: {
       type: String,
@@ -93,6 +93,7 @@ const UserSchema = new mongoose.Schema(
       // Get infor user: exclude password
       toAuthJSON() {
         return {
+          _id: this._id,
           email: this.email,
           role: this.role,
           fullName: this.fullName,

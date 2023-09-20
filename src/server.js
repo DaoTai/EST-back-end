@@ -1,8 +1,9 @@
 import express from "express";
+import cors from "cors";
+import cookieParser from "cookie-parser";
 import { env } from "~/utils/environment";
 import connectDB from "~/config/mongodb";
 import route from "~/routes";
-import cookieParser from "cookie-parser";
 
 const PORT = env.PORT || 8000;
 const HOST_NAME = "localhost";
@@ -13,6 +14,7 @@ const HOST_NAME = "localhost";
   // Apply middlewares
   app.use(express.json());
   app.use(cookieParser());
+  app.use(cors());
   connectDB();
   route(app);
   app.listen(PORT, HOST_NAME, () => {

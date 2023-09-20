@@ -1,10 +1,10 @@
 import User from "../models/User.model";
-
+import { verifyEmailByCaptcha } from "~/services/nodemailer";
 class AuthController {
   // [POST] /auth/sign-up
   async signUp(req, res) {
     try {
-      const { email, password, fullName, provider } = req.body;
+      const { email, password, fullName, avatar, provider } = req.body;
       if (!email) return res.status(401).json("Email is required field");
       if (!fullName) return res.status(401).json("Full name is required field");
       // Vì user có 2 cách đăng nhập:
@@ -14,6 +14,7 @@ class AuthController {
         email,
         fullName,
         provider,
+        avatar,
       });
 
       // Check vừa có password vừa có provider: Postman, swagger,...
@@ -44,23 +45,18 @@ class AuthController {
       const userLogin = new User({
         email,
       });
-      const user = await User.findOne(
-        {
-          email,
-        },
-        { hashedPassword: 0 }
-      );
+      const user = await User.findOne({
+        email,
+      });
+
       // If user not exist
       if (!user) return res.status(401).json("User is not exist");
-      // Kiểm tra user đăng nhập theo tài khoản đã đăng ký theo app (có password)
-      if (password) {
-        const isValidPwd = userLogin.isValidPassword(password, user.hashedPassword);
-        return isValidPwd ? res.status(401).json(user) : res.status(401).json("Password is wrong");
-      }
+
       const accessToken = user.generateAccessToken();
       const refreshToken = user.generateRefreshToken();
+      const data = user.toAuthJSON();
       const payload = {
-        ...user._doc,
+        ...data,
         accessToken,
         refreshToken,
       };
@@ -69,9 +65,36 @@ class AuthController {
         secure: false,
         sameSite: "strict",
       });
+
+      // Kiểm tra user đăng nhập theo tài khoản đã đăng ký theo app (có password)
+      if (password) {
+        const isValidPwd = userLogin.isValidPassword(password, user.hashedPassword);
+        return isValidPwd
+          ? res.status(401).json(payload)
+          : res.status(401).json("Password is wrong");
+      }
+
       return res.status(200).json(payload);
     } catch (err) {
+      console.log("Error: ", err);
       res.status(500).json(err);
+    }
+  }
+
+  // [POST] /auth/verify-email
+  async verifyEmail(req, res) {
+    const { email } = req.body;
+    if (!email) return res.status(400).json("Email is required");
+    try {
+      // Check email existed
+      const isExisted = await User.findOne({
+        email,
+      });
+      if (isExisted) return res.status(403).json("Email is existed");
+      const result = await verifyEmailByCaptcha(email);
+      return res.status(200).json(result);
+    } catch (error) {
+      res.status(500).json(error);
     }
   }
 }
