@@ -15,7 +15,6 @@ const UserSchema = new mongoose.Schema(
         message: "Email is invalid",
       },
       require: [true, "Email is required field"],
-      unique: true,
     },
     roles: {
       type: [String],
@@ -103,6 +102,7 @@ const UserSchema = new mongoose.Schema(
           dob: this.dob,
           gender: this.gender,
           school: this.school,
+          provider: this.provider,
           favouriteProramingLanguages: this.favouriteProramingLanguages,
         };
       },
@@ -137,10 +137,22 @@ const UserSchema = new mongoose.Schema(
         );
       },
 
-      // Checking existed email
-      async isExistEmail(email) {
+      // Checking existed user with provider
+      async isExistByProvider(email, provider) {
         const isExist = await mongoose.model("User").findOne({
           email,
+          provider,
+        });
+        return !!isExist;
+      },
+
+      // Checking existed user with password
+      async isExistByPassword(email) {
+        const isExist = await mongoose.model("User").findOne({
+          email,
+          hashedPassword: {
+            $exists: true,
+          },
         });
         return !!isExist;
       },

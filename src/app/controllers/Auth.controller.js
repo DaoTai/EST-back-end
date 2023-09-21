@@ -1,5 +1,9 @@
 import User from "../models/User.model";
 import { verifyEmailByCaptcha } from "~/services/nodemailer";
+
+// user có 2 cách đăng nhập:
+// 1. Provider từ NextAuth
+// 2. Theo thông tin đã đăng ký từ hệ thống
 class AuthController {
   // [POST] /auth/sign-up
   async signUp(req, res) {
@@ -7,9 +11,7 @@ class AuthController {
       const { email, password, fullName, avatar, provider } = req.body;
       if (!email) return res.status(401).json("Email is required field");
       if (!fullName) return res.status(401).json("Full name is required field");
-      // Vì user có 2 cách đăng nhập:
-      // 1. Provider từ NextAuth
-      // 2. Theo thông tin đã đăng ký từ hệ thống
+
       const user = new User({
         email,
         fullName,
@@ -21,17 +23,28 @@ class AuthController {
       if (password && provider) {
         return res.status(401).json("Invalid information");
       }
-      // Check email existed
-      if (await user.isExistEmail(email)) return res.status(401).json("Email is existed");
+
+      // Check user existed
+      if (!password && provider) {
+        const isExisted = await user.isExistByProvider(email, provider);
+        if (isExisted) return res.status(401).json("User is existed. Please using other emails");
+      }
 
       // Nếu user đăng ký theo app (có password)
       if (password && !provider) {
-        if (password.length < 6) return res.status(401).json("Password is at least 6 characters");
+        const isExisted = await user.isExistByPassword(email);
+        if (isExisted) {
+          return res.status(401).json("User is existed. Please using other emails");
+        }
+        if (password.length < 6) {
+          return res.status(401).json("Password is at least 6 characters");
+        }
         user.hashPassword(password);
       }
       const savedUser = await user.save();
       return res.status(200).json(savedUser.toAuthJSON());
     } catch (err) {
+      console.log("Error: ", err);
       res.status(500).json(err);
     }
   }
@@ -47,6 +60,7 @@ class AuthController {
       });
       const user = await User.findOne({
         email,
+        provider,
       });
 
       // If user not exist
@@ -65,20 +79,31 @@ class AuthController {
         secure: false,
         sameSite: "strict",
       });
-
+      console.log("Body: ", req.body);
+      console.log("User: ", payload);
       // Kiểm tra user đăng nhập theo tài khoản đã đăng ký theo app (có password)
-      if (password) {
+      if (!provider && password && user.hashedPassword) {
         const isValidPwd = userLogin.isValidPassword(password, user.hashedPassword);
         return isValidPwd
-          ? res.status(401).json(payload)
+          ? res.status(200).json(payload)
           : res.status(401).json("Password is wrong");
       }
 
       return res.status(200).json(payload);
     } catch (err) {
-      console.log("Error: ", err);
       res.status(500).json(err);
     }
+  }
+
+  // [POST] /auth/check-exist
+  async checkExistEmailAndProvider(req, res) {
+    const { email, provider } = req.body;
+    if (!email || !provider) return res.status(400).json("Invalid information");
+    const user = await User.findOne({
+      email,
+      provider,
+    });
+    return res.status(200).json(!!user);
   }
 
   // [POST] /auth/verify-email
@@ -87,10 +112,12 @@ class AuthController {
     if (!email) return res.status(400).json("Email is required");
     try {
       // Check email existed
-      const isExisted = await User.findOne({
+      const user = new User({
         email,
       });
-      if (isExisted) return res.status(403).json("Email is existed");
+      const existed = await user.isExistByPassword(email);
+      // Nếu user đã có email đăng ký theo app rồi
+      if (existed) return res.status(403).json("Email is existed. Please using other emails");
       const result = await verifyEmailByCaptcha(email);
       return res.status(200).json(result);
     } catch (error) {

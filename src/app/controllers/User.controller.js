@@ -1,3 +1,5 @@
 import UserModel from "../models/User.model";
 
-class UserController {}
+class UserController {
+  // [POST]
+}
