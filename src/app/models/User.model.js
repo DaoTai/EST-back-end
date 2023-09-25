@@ -81,6 +81,7 @@ const UserSchema = new mongoose.Schema(
         const salt = bcrypt.genSaltSync(12);
         const hashedPassword = bcrypt.hashSync(password, salt);
         this.hashedPassword = hashedPassword;
+        return hashedPassword;
       },
 
       // Check valid user password

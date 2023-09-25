@@ -1,5 +1,5 @@
 import User from "../models/User.model";
-import { verifyEmailByCaptcha } from "~/services/nodemailer";
+import { verifyEmailByCaptcha, sendNewPassword } from "~/services/nodemailer";
 
 // user có 2 cách đăng nhập:
 // 1. Provider từ NextAuth
@@ -42,7 +42,7 @@ class AuthController {
         user.hashPassword(password);
       }
       const savedUser = await user.save();
-      return res.status(200).json(savedUser.toAuthJSON());
+      return res.status(201).json(savedUser.toAuthJSON());
     } catch (err) {
       console.log("Error: ", err);
       res.status(500).json(err);
@@ -53,7 +53,6 @@ class AuthController {
   async signIn(req, res) {
     try {
       const { email, password, provider } = req.body;
-      // Check exist email
       if (!email) return res.status(401).json("Email is required field");
       const userLogin = new User({
         email,
@@ -79,8 +78,7 @@ class AuthController {
         secure: false,
         sameSite: "strict",
       });
-      console.log("Body: ", req.body);
-      console.log("User: ", payload);
+
       // Kiểm tra user đăng nhập theo tài khoản đã đăng ký theo app (có password)
       if (!provider && password && user.hashedPassword) {
         const isValidPwd = userLogin.isValidPassword(password, user.hashedPassword);
@@ -95,7 +93,7 @@ class AuthController {
     }
   }
 
-  // [POST] /auth/check-exist
+  // [POST] /auth/exist-email-and-provider
   async checkExistEmailAndProvider(req, res) {
     const { email, provider } = req.body;
     if (!email || !provider) return res.status(400).json("Invalid information");
@@ -122,6 +120,32 @@ class AuthController {
       return res.status(200).json(result);
     } catch (error) {
       res.status(500).json(error);
+    }
+  }
+
+  // [POST] /auth/forgot-password
+  async getNewPassword(req, res) {
+    const { email } = req.body;
+    try {
+      if (!email) return res.status(400).json("Email is required");
+      const user = new User({ email });
+      const exist = await user.isExistByPassword(email);
+      if (!exist) return res.status(401).json("User is not exist");
+      const newPassword = await sendNewPassword(email);
+      await User.updateOne(
+        {
+          email,
+          hashedPassword: {
+            $exists: true,
+          },
+        },
+        {
+          hashedPassword: user.hashPassword(newPassword),
+        }
+      );
+      return res.status(200).json(true);
+    } catch (err) {
+      return res.stauts(500).json(err);
     }
   }
 }

@@ -4,6 +4,6 @@ const router = express.Router();
 router.post("/sign-up", AuthController.signUp);
 router.post("/sign-in", AuthController.signIn);
 router.post("/verify-email", AuthController.verifyEmail);
-router.post("/check-exist", AuthController.checkExistEmailAndProvider);
-
+router.post("/exist-email-and-provider", AuthController.checkExistEmailAndProvider);
+router.post("/forgot-password", AuthController.getNewPassword);
 export default router;

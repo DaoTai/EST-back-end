@@ -15,16 +15,38 @@ export const verifyEmailByCaptcha = async (emailTo) => {
   const message = {
     from: env.NODE_MAILER_USER,
     to: emailTo,
-    subject: "[EST Edu] Xác nhận email",
+    subject: "[EST Edu] Confirm your email",
     html: `
             <h3>EST EDU 🌟</h3>
-            <p>Mã xác nhận:<b> ${captcha}</b> </p>
+            <h4>Hi, this is captcha to confirm your email. Please don't leak it</h4>
+            <p>Captcha:<b> ${captcha}</b> </p>
         `,
   };
 
   try {
     await transporter.sendMail(message);
     return String(captcha);
+  } catch (err) {
+    return err;
+  }
+};
+
+export const sendNewPassword = async (emailTo) => {
+  const password = Math.floor(10000000 + Math.random() * 9000000);
+  const message = {
+    from: env.NODE_MAILER_USER,
+    to: emailTo,
+    subject: "[EST Edu] Forgot password",
+    html: `
+            <h3>EST EDU 🌟</h3>
+            <h4>Hi, this is your new password. Please don't leak it and change it sooner</h4>
+            <p>New password:<b> ${password}</b> </p>
+        `,
+  };
+
+  try {
+    await transporter.sendMail(message);
+    return String(password);
   } catch (err) {
     return err;
   }
