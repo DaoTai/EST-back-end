@@ -1,12 +1,15 @@
+import jwt from "jsonwebtoken";
 import User from "../models/User.model";
 import { verifyEmailByCaptcha, sendNewPassword } from "~/services/nodemailer";
+import { env } from "~/utils/environment";
+import UserModel from "../models/User.model";
 
 // user có 2 cách đăng nhập:
 // 1. Provider từ NextAuth
 // 2. Theo thông tin đã đăng ký từ hệ thống
 class AuthController {
   // [POST] /auth/sign-up
-  async signUp(req, res) {
+  async signUp(req, res, next) {
     try {
       const { email, password, fullName, avatar, provider } = req.body;
       if (!email) return res.status(401).json("Email is required field");
@@ -44,13 +47,12 @@ class AuthController {
       const savedUser = await user.save();
       return res.status(201).json(savedUser.toAuthJSON());
     } catch (err) {
-      console.log("Error: ", err);
-      res.status(500).json(err);
+      next(err);
     }
   }
 
   // [POST] /auth/sign-in
-  async signIn(req, res) {
+  async signIn(req, res, next) {
     try {
       const { email, password, provider } = req.body;
       if (!email) return res.status(401).json("Email is required field");
@@ -71,7 +73,6 @@ class AuthController {
       const payload = {
         ...data,
         accessToken,
-        refreshToken,
       };
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
@@ -89,12 +90,12 @@ class AuthController {
 
       return res.status(200).json(payload);
     } catch (err) {
-      res.status(500).json(err);
+      next(err);
     }
   }
 
   // [POST] /auth/exist-email-and-provider
-  async checkExistEmailAndProvider(req, res) {
+  async checkExistEmailAndProvider(req, res, next) {
     const { email, provider } = req.body;
     if (!email || !provider) return res.status(400).json("Invalid information");
     const user = await User.findOne({
@@ -105,7 +106,7 @@ class AuthController {
   }
 
   // [POST] /auth/verify-email
-  async verifyEmail(req, res) {
+  async verifyEmail(req, res, next) {
     const { email } = req.body;
     if (!email) return res.status(400).json("Email is required");
     try {
@@ -118,13 +119,13 @@ class AuthController {
       if (existed) return res.status(403).json("Email is existed. Please using other emails");
       const result = await verifyEmailByCaptcha(email);
       return res.status(200).json(result);
-    } catch (error) {
-      res.status(500).json(error);
+    } catch (err) {
+      next(err);
     }
   }
 
   // [POST] /auth/forgot-password
-  async getNewPassword(req, res) {
+  async getNewPassword(req, res, next) {
     const { email } = req.body;
     try {
       if (!email) return res.status(400).json("Email is required");
@@ -145,7 +146,32 @@ class AuthController {
       );
       return res.status(200).json(true);
     } catch (err) {
-      return res.stauts(500).json(err);
+      next(err);
+    }
+  }
+
+  // [POST] /auth/refresh-token
+  async refreshToken(req, res, next) {
+    try {
+      const refreshToken = req.cookies?.refreshToken;
+      if (!refreshToken) return res.status(401).json("You are unauthenticated");
+      const decodedRefreshToken = jwt.verify(refreshToken, env.JWT_REFRESH_TOKEN);
+
+      // Success decode refresh token
+      const user = new UserModel(decodedRefreshToken);
+      const newAccessToken = user.generateAccessToken();
+      const newRefreshToken = user.generateRefreshToken();
+      res.cookie("refreshToken", newRefreshToken, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "strict",
+      });
+      return res.status(200).json({
+        accessToken: newAccessToken,
+      });
+    } catch (error) {
+      // Token hết hạn
+      next(error);
     }
   }
 }

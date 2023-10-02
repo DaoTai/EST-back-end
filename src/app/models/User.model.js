@@ -56,9 +56,14 @@ const UserSchema = new mongoose.Schema(
     },
     school: {
       type: String,
-      minLength: [3, "Name school is invalid"],
+      minLength: [3, "School name is invalid"],
+      maxLength: [80, "School name is so long"],
     },
-    favouriteProramingLanguages: [
+    city: {
+      type: String,
+      maxLength: [50, "City is so long"],
+    },
+    favouriteProrammingLanguages: [
       {
         type: String,
       },
@@ -105,6 +110,8 @@ const UserSchema = new mongoose.Schema(
           school: this.school,
           provider: this.provider,
           favouriteProramingLanguages: this.favouriteProramingLanguages,
+          updatedAt: this.updatedAt,
+          createdAt: this.createdAt,
         };
       },
 
@@ -118,7 +125,7 @@ const UserSchema = new mongoose.Schema(
           },
           env.JWT_ACCESS_TOKEN,
           {
-            expiresIn: "20",
+            expiresIn: "1h",
           }
         );
       },
