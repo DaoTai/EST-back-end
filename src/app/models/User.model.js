@@ -4,6 +4,8 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { env } from "~/utils/environment";
 import { isEmail } from "~/utils/validation";
+import { transformAttachment } from "~/utils/attachment";
+import AttachmentSchema from "~/utils/attachment/Schema";
 
 const UserSchema = new mongoose.Schema(
   {
@@ -37,8 +39,7 @@ const UserSchema = new mongoose.Schema(
       },
     },
     avatar: {
-      type: String,
-      default: "",
+      type: AttachmentSchema,
     },
     bio: {
       type: String,
@@ -103,13 +104,14 @@ const UserSchema = new mongoose.Schema(
           role: this.role,
           fullName: this.fullName,
           username: this.username,
-          avatar: this.avatar,
+          avatar: transformAttachment(this.avatar),
           bio: this.bio,
           dob: this.dob,
           gender: this.gender,
           school: this.school,
+          city: this.city,
           provider: this.provider,
-          favouriteProramingLanguages: this.favouriteProramingLanguages,
+          favouriteProrammingLanguages: this.favouriteProrammingLanguages,
           updatedAt: this.updatedAt,
           createdAt: this.createdAt,
         };
@@ -125,7 +127,7 @@ const UserSchema = new mongoose.Schema(
           },
           env.JWT_ACCESS_TOKEN,
           {
-            expiresIn: "1h",
+            expiresIn: "10h",
           }
         );
       },

@@ -79,6 +79,7 @@ class AuthController {
         secure: false,
         sameSite: "strict",
       });
+      console.log("Sign in: ", payload);
 
       // Kiểm tra user đăng nhập theo tài khoản đã đăng ký theo app (có password)
       if (!provider && password && user.hashedPassword) {
@@ -87,7 +88,6 @@ class AuthController {
           ? res.status(200).json(payload)
           : res.status(401).json("Password is wrong");
       }
-
       return res.status(200).json(payload);
     } catch (err) {
       next(err);
