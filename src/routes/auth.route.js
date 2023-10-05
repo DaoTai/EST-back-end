@@ -8,4 +8,5 @@ router.post("/verify-email", AuthController.verifyEmail);
 router.post("/exist-email-and-provider", AuthController.checkExistEmailAndProvider);
 router.post("/forgot-password", AuthController.getNewPassword);
 router.post("/refresh-token", AuthController.refreshToken);
+
 export default router;

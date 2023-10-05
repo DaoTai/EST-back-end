@@ -71,7 +71,7 @@ const UserSchema = new mongoose.Schema(
     ],
     hashedPassword: {
       type: String,
-      minLength: [6, "Password is at least 6 characters"],
+      minLength: [6, "HashedPassword is at least 6 characters"],
     },
     provider: {
       type: String,
@@ -83,7 +83,7 @@ const UserSchema = new mongoose.Schema(
     methods: {
       // Encrypt password
       hashPassword(password) {
-        if (!password) return null;
+        if (!password || password.trim().length < 6) return null;
         const salt = bcrypt.genSaltSync(12);
         const hashedPassword = bcrypt.hashSync(password, salt);
         this.hashedPassword = hashedPassword;
@@ -92,16 +92,17 @@ const UserSchema = new mongoose.Schema(
 
       // Check valid user password
       isValidPassword(password, hashedPassword) {
+        if (!password || !hashedPassword) return false;
         const isValid = bcrypt.compareSync(password, hashedPassword);
         return isValid;
       },
 
       // Get infor user: exclude password
-      toAuthJSON() {
+      toProfileJSON() {
         return {
           _id: this._id,
           email: this.email,
-          role: this.role,
+          roles: this.roles,
           fullName: this.fullName,
           username: this.username,
           avatar: transformAttachment(this.avatar),

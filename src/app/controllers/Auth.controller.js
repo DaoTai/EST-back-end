@@ -45,7 +45,7 @@ class AuthController {
         user.hashPassword(password);
       }
       const savedUser = await user.save();
-      return res.status(201).json(savedUser.toAuthJSON());
+      return res.status(201).json(savedUser.toProfileJSON());
     } catch (err) {
       next(err);
     }
@@ -69,7 +69,7 @@ class AuthController {
 
       const accessToken = user.generateAccessToken();
       const refreshToken = user.generateRefreshToken();
-      const data = user.toAuthJSON();
+      const data = user.toProfileJSON();
       const payload = {
         ...data,
         accessToken,
@@ -79,7 +79,6 @@ class AuthController {
         secure: false,
         sameSite: "strict",
       });
-      console.log("Sign in: ", payload);
 
       // Kiểm tra user đăng nhập theo tài khoản đã đăng ký theo app (có password)
       if (!provider && password && user.hashedPassword) {
