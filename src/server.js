@@ -5,7 +5,7 @@ import path from "path";
 import { handlingErrorMiddleware } from "~/app/middlewares";
 import connectDB from "~/config/mongodb";
 import route from "~/routes";
-import { env } from "~/utils/environment";
+import env from "~/utils/environment";
 
 const PORT = env.PORT || 8000;
 const HOST_NAME = env.HOST_NAME;

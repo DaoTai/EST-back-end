@@ -1,5 +1,5 @@
 import "dotenv/config";
-export const env = {
+const env = {
   PORT: process.env.PORT,
   HOST_NAME: process.env.HOST_NAME,
   MONGODB_URI: process.env.MONGODB_URI,
@@ -8,4 +8,10 @@ export const env = {
   NODE_MAILER_USER: process.env.NODE_MAILER_USER,
   NODE_MAILER_PASSWORD: process.env.NODE_MAILER_PASSWORD,
   STATIC_IMAGES_FOLDER: process.env.STATIC_IMAGES_FOLDER,
+  IMAGES_SERVER_PATH: process.env.IMAGES_SERVER_PATH,
+  CLOUDINARY_NAME: process.env.CLOUDINARY_NAME,
+  CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
+  CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
 };
+
+export default env;

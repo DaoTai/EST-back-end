@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { env } from "../utils/environment";
+import env from "../utils/environment";
 const connectDB = () => {
   try {
     mongoose.connect(env.MONGODB_URI, {
@@ -7,7 +7,7 @@ const connectDB = () => {
     });
     console.log("Connect to DB successfully!!");
   } catch (err) {
-    throw Error("Connect to DB failed");
+    throw new Error("Connect to DB failed");
   }
 };
 

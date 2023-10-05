@@ -1,6 +1,6 @@
 import express from "express";
 import UserController from "~/app/controllers/User.controller";
-import { upload } from "~/services/multer";
+import { upload } from "~/utils/multer";
 
 //
 

@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.model";
-import { verifyEmailByCaptcha, sendNewPassword } from "~/services/nodemailer";
-import { env } from "~/utils/environment";
+import { verifyEmailByCaptcha, sendNewPassword } from "~/utils/nodemailer";
+import env from "~/utils/environment";
 import UserModel from "../models/User.model";
 
 // user có 2 cách đăng nhập:

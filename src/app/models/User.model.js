@@ -1,12 +1,12 @@
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import MongooseDelete from "mongoose-delete";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { env } from "~/utils/environment";
+import env from "~/utils/environment";
 import { isEmail } from "~/utils/validation";
-import { transformAttachment } from "~/utils/attachment";
+import { transformAttachment, deleteAttachment } from "~/utils/attachment";
 import AttachmentSchema from "~/utils/attachment/Schema";
-
+import { uploadImageCloud, deleteImageCloud } from "~/utils/cloudinary";
 const UserSchema = new mongoose.Schema(
   {
     email: {
@@ -145,6 +145,42 @@ const UserSchema = new mongoose.Schema(
             expiresIn: "14d",
           }
         );
+      },
+
+      // Delete avatar
+      async deleteAvatar() {
+        try {
+          if (this.avatar.storedBy === "server") {
+            deleteAttachment(this.avatar.uri);
+          } else {
+            // Get public_id of image on cloudinary
+            const lastNameUri = this.avatar.uri.split("/").pop();
+            const id = lastNameUri.split(".")[0];
+            await deleteImageCloud(id);
+          }
+        } catch (error) {
+          throw new Error(error);
+        }
+      },
+
+      // Generate avatar
+      async generateNewAvatar(file) {
+        try {
+          const imageCloud = await uploadImageCloud(file);
+
+          // Xoá file tạm trong thư mục
+          deleteAttachment(file.filename);
+          return {
+            uri: imageCloud.url,
+            storedBy: "cloudinary",
+          };
+        } catch (error) {
+          // Trong TH xảy ra lỗi ko lưu trên cloud được thì lưu bằng multer
+          return {
+            uri: file.filename,
+            storedBy: "server",
+          };
+        }
       },
 
       // Checking existed user with provider

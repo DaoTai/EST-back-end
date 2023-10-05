@@ -1,5 +1,5 @@
 import { createTransport } from "nodemailer";
-import { env } from "~/utils/environment";
+import env from "~/utils/environment";
 const transporter = createTransport({
   host: "smtp.gmail.com",
   port: 587,

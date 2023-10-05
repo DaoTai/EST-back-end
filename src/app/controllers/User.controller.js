@@ -18,10 +18,17 @@ class UserController {
   async editProfile(req, res, next) {
     const data = req.body;
     const file = req.file;
-    if (file) data.avatar = { uri: file.filename, storedBy: "server" };
     try {
-      const user = await UserModel.findByIdAndUpdate(req.user._id, data, { new: true });
-      res.status(200).json(user.toAuthJSON());
+      if (file) {
+        const currentUser = await UserModel.findById(req.user._id);
+        data.avatar = await currentUser.generateNewAvatar(file);
+        await currentUser.deleteAvatar();
+      }
+
+      // Update data
+      const editedUser = await UserModel.findByIdAndUpdate(req.user._id, data, { new: true });
+
+      res.status(200).json(editedUser.toAuthJSON());
     } catch (error) {
       next(error);
     }

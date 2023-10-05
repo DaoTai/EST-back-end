@@ -19,3 +19,7 @@ httpOnly: true, // Flags the cookie to be accessible only by the web server.
 secure: false, // Marks the cookie to be used with HTTPS only.
 sameSite: "strict", //Value of the “SameSite” Set-Cookie attribute
 });
+
+# Flow upload with cloudinary
+
+Lưu file vào trong 1 thư mục với multer => upload cloudinary => xoá file đã lưu trước đó trong thư mục
