@@ -67,18 +67,7 @@ class AuthController {
       // If user not exist
       if (!user) return res.status(401).json("User is not exist");
 
-      const accessToken = user.generateAccessToken();
-      const refreshToken = user.generateRefreshToken();
-      const data = user.toProfileJSON();
-      const payload = {
-        ...data,
-        accessToken,
-      };
-      res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: false,
-        sameSite: "strict",
-      });
+      const payload = user.toAuthJSON();
 
       // Kiểm tra user đăng nhập theo tài khoản đã đăng ký theo app (có password)
       if (!provider && password && user.hashedPassword) {
@@ -152,7 +141,7 @@ class AuthController {
   // [POST] /auth/refresh-token
   async refreshToken(req, res, next) {
     try {
-      const refreshToken = req.cookies?.refreshToken;
+      const refreshToken = req.body?.refreshToken;
       if (!refreshToken) return res.status(401).json("You are unauthenticated");
       const decodedRefreshToken = jwt.verify(refreshToken, env.JWT_REFRESH_TOKEN);
 
@@ -160,17 +149,15 @@ class AuthController {
       const user = new UserModel(decodedRefreshToken);
       const newAccessToken = user.generateAccessToken();
       const newRefreshToken = user.generateRefreshToken();
-      res.cookie("refreshToken", newRefreshToken, {
-        httpOnly: true,
-        secure: false,
-        sameSite: "strict",
-      });
+
       return res.status(200).json({
         accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
       });
     } catch (error) {
+      console.log("Error: ", error);
       // Token hết hạn
-      next(error);
+      return res.status(403).json("Refresh token is invalid");
     }
   }
 }

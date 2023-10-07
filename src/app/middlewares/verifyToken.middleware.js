@@ -3,6 +3,7 @@ import env from "~/utils/environment";
 
 const verifyToken = async (req, res, next) => {
   const token = req.headers.authorization;
+  console.log("Token: ", token);
   try {
     if (token) {
       const accessToken = token.split(" ")[1];
@@ -13,7 +14,8 @@ const verifyToken = async (req, res, next) => {
       return res.status(401).json("You are unauthenticated");
     }
   } catch (error) {
-    return res.status(403).json("Token is invalid");
+    // console.log("Error access token: ", error);
+    return res.status(403).json("Access token is invalid");
   }
 };
 

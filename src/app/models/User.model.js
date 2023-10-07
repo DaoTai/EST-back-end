@@ -118,6 +118,28 @@ const UserSchema = new mongoose.Schema(
         };
       },
 
+      // Get infor user + accessToken + refreshToken
+      toAuthJSON() {
+        return {
+          _id: this._id,
+          email: this.email,
+          roles: this.roles,
+          fullName: this.fullName,
+          username: this.username,
+          avatar: transformAttachment(this.avatar),
+          bio: this.bio,
+          dob: this.dob,
+          gender: this.gender,
+          school: this.school,
+          city: this.city,
+          provider: this.provider,
+          favouriteProrammingLanguages: this.favouriteProrammingLanguages,
+          updatedAt: this.updatedAt,
+          createdAt: this.createdAt,
+          accessToken: this.generateAccessToken(),
+          refreshToken: this.generateRefreshToken(),
+        };
+      },
       // Generate access token
       generateAccessToken() {
         return jwt.sign(
@@ -128,7 +150,7 @@ const UserSchema = new mongoose.Schema(
           },
           env.JWT_ACCESS_TOKEN,
           {
-            expiresIn: "10h",
+            expiresIn: "1d",
           }
         );
       },

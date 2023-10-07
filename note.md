@@ -23,3 +23,33 @@ sameSite: "strict", //Value of the “SameSite” Set-Cookie attribute
 # Flow upload with cloudinary
 
 Lưu file vào trong 1 thư mục với multer => upload cloudinary => xoá file đã lưu trước đó trong thư mục
+
+# OAuth2 (Open Authorization 2.0) là một giao thức xác thực và ủy quyền phổ biến được sử dụng để bảo vệ các tài nguyên và cung cấp quyền truy cập cho người dùng giữa các ứng dụng.
+
+OAuth2 cho phép người dùng cung cấp quyền truy cập cho bên thứ ba mà không cần chia sẻ trực tiếp thông tin đăng nhập nhạy cảm, như mật khẩu. Thay vào đó, OAuth2 sử dụng các mã thông báo (tokens) để đại diện cho quyền truy cập được ủy quyền và xác thực cho các ứng dụng khác.
+
+Quá trình hoạt động của OAuth2 bao gồm các bên sau:
+
+1. Người dùng (Resource Owner): Người dùng cuối cung cấp quyền truy cập cho ứng dụng thứ ba.
+
+2. Ứng dụng yêu cầu quyền truy cập (Client): Ứng dụng muốn truy cập vào tài nguyên hoặc dịch vụ của người dùng.
+
+3. Cung cấp dịch vụ (Authorization Server): Dịch vụ xác thực và ủy quyền, cung cấp mã thông báo (authorization code) cho ứng dụng.
+
+4. Bên thứ ba (Third-party Application): Ứng dụng yêu cầu truy cập tài nguyên của người dùng thông qua quyền ủy quyền từ dịch vụ xác thực.
+
+5. Ứng dụng yêu cầu truy cập tài nguyên (Resource Server): Dịch vụ cung cấp tài nguyên được bảo vệ.
+
+Quá trình xác thực OAuth2 thường bao gồm các bước như sau:
+
+1. Ứng dụng yêu cầu ủy quyền từ người dùng thông qua trình duyệt.
+
+2. Người dùng cung cấp quyền truy cập cho ứng dụng.
+
+3. Ứng dụng nhận được mã thông báo từ dịch vụ xác thực.
+
+4. Ứng dụng sử dụng mã thông báo để trao đổi lấy mã thông báo truy cập (access token).
+
+5. Ứng dụng sử dụng mã thông báo truy cập để truy cập tài nguyên từ dịch vụ cung cấp tài nguyên.
+
+OAuth2 đã trở thành một tiêu chuẩn phổ biến cho việc ủy quyền và xác thực trong các ứng dụng web và di động, cho phép người dùng chia sẻ quyền truy cập một cách an toàn và linh hoạt giữa các ứng dụng khác nhau.

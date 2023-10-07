@@ -1,5 +1,52 @@
 import UserModel from "../models/User.model";
 class UserController {
+  // [GET] user/profile
+  async searchProfile(req, res, next) {
+    try {
+      const { page: pageQuery, search: searchQuery, role: roleQuery } = req.query;
+      const perPage = 1;
+      const page = +pageQuery || 1;
+      const regex = new RegExp(searchQuery, "i");
+      const conditions = [
+        {
+          _id: { $ne: req.user._id },
+          // $or: [{ username: regex }, { fullName: regex }],
+        },
+        {
+          hashedPassword: 0,
+        },
+      ];
+      // Exist query
+      if (roleQuery) conditions[0].roles = { $in: [roleQuery] };
+      if (searchQuery) conditions[0]["$or"] = [{ username: regex }, { fullName: regex }];
+      const users = await UserModel.find(...conditions)
+        .skip(perPage * page - perPage)
+        .limit(perPage);
+      const totalUsers = await UserModel.count(...conditions);
+
+      return res.status(200).json({
+        users,
+        maxPage: Math.ceil(totalUsers / perPage),
+        total: totalUsers,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // [GET] user/profile/:id
+  async getProfile(req, res, next) {
+    try {
+      const user = await UserModel.findById(req.params.id, {
+        hashedPassword: 0,
+      });
+
+      return res.status(200).json(user.toProfileJSON());
+    } catch (error) {
+      next(error);
+    }
+  }
+
   // [PATCH] /user/change-password
   async changePassword(req, res, next) {
     try {
@@ -10,6 +57,7 @@ class UserController {
       if (newPassword.trim().length < 6)
         return res.status(401).json("Password is at least 6 characters");
       const user = await UserModel.findById(req.user._id);
+      if (!user.hashedPassword) return res.status(403).json("Account doesn't have password");
       const isValidPassword = user.isValidPassword(currentPassword, user.hashedPassword);
 
       if (!isValidPassword) return res.status(401).json("Current password is invalid");
@@ -27,20 +75,6 @@ class UserController {
       );
 
       return res.status(201).json(updatedUser);
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  // [GET] user/profile/:id
-  async getProfile(req, res, next) {
-    try {
-      console.log("params: ", req.params);
-      const user = await UserModel.findById(req.params.id, {
-        hashedPassword: 0,
-      });
-
-      return res.status(200).json(user);
     } catch (error) {
       next(error);
     }

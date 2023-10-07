@@ -1,4 +1,3 @@
-import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 import path from "path";
@@ -17,8 +16,12 @@ const publicPath = path.join(__dirname, "public");
 
   // Apply middlewares
   app.use(express.static(publicPath));
-  app.use(cookieParser());
-  app.use(cors());
+
+  app.use(
+    cors({
+      origin: env.URI_FRONT_END,
+    })
+  );
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
