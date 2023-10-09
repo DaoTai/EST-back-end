@@ -4,13 +4,12 @@ class UserController {
   async searchProfile(req, res, next) {
     try {
       const { page: pageQuery, search: searchQuery, role: roleQuery } = req.query;
-      const perPage = 1;
+      const perPage = 12;
       const page = +pageQuery || 1;
       const regex = new RegExp(searchQuery, "i");
       const conditions = [
         {
           _id: { $ne: req.user._id },
-          // $or: [{ username: regex }, { fullName: regex }],
         },
         {
           hashedPassword: 0,
@@ -40,8 +39,7 @@ class UserController {
       const user = await UserModel.findById(req.params.id, {
         hashedPassword: 0,
       });
-
-      return res.status(200).json(user.toProfileJSON());
+      return res.status(200).json(user ? user.toProfileJSON() : user);
     } catch (error) {
       next(error);
     }
@@ -51,7 +49,6 @@ class UserController {
   async changePassword(req, res, next) {
     try {
       const { currentPassword, newPassword } = req.body;
-
       if (!currentPassword || !newPassword || currentPassword === newPassword)
         return res.status(400).json("Passwords are invalid");
       if (newPassword.trim().length < 6)
@@ -74,13 +71,13 @@ class UserController {
         }
       );
 
-      return res.status(201).json(updatedUser);
+      return res.status(201).json(updatedUser.toProfileJSON());
     } catch (error) {
       next(error);
     }
   }
 
-  // [PATCH] user/profile/edit
+  // [PATCH] user/profile
   async editProfile(req, res, next) {
     const data = req.body;
     const file = req.file;

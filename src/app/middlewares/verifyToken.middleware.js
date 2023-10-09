@@ -3,7 +3,6 @@ import env from "~/utils/environment";
 
 const verifyToken = async (req, res, next) => {
   const token = req.headers.authorization;
-  console.log("Token: ", token);
   try {
     if (token) {
       const accessToken = token.split(" ")[1];
