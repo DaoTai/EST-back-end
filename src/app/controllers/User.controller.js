@@ -1,4 +1,4 @@
-import UserModel from "../models/User.model";
+import User from "../models/User.model";
 class UserController {
   // [GET] user/profile
   async searchProfile(req, res, next) {
@@ -18,10 +18,10 @@ class UserController {
       // Exist query
       if (roleQuery) conditions[0].roles = { $in: [roleQuery] };
       if (searchQuery) conditions[0]["$or"] = [{ username: regex }, { fullName: regex }];
-      const users = await UserModel.find(...conditions)
+      const users = await User.find(...conditions)
         .skip(perPage * page - perPage)
         .limit(perPage);
-      const totalUsers = await UserModel.count(...conditions);
+      const totalUsers = await User.count(...conditions);
 
       return res.status(200).json({
         users,
@@ -36,7 +36,7 @@ class UserController {
   // [GET] user/profile/:id
   async getProfile(req, res, next) {
     try {
-      const user = await UserModel.findById(req.params.id, {
+      const user = await User.findById(req.params.id, {
         hashedPassword: 0,
       });
       return res.status(200).json(user ? user.toProfileJSON() : user);
@@ -53,7 +53,7 @@ class UserController {
         return res.status(400).json("Passwords are invalid");
       if (newPassword.trim().length < 6)
         return res.status(401).json("Password is at least 6 characters");
-      const user = await UserModel.findById(req.user._id);
+      const user = await User.findById(req.user._id);
       if (!user.hashedPassword) return res.status(403).json("Account doesn't have password");
       const isValidPassword = user.isValidPassword(currentPassword, user.hashedPassword);
 
@@ -61,7 +61,7 @@ class UserController {
 
       const newHashedPassword = user.hashPassword(newPassword);
 
-      const updatedUser = await UserModel.findByIdAndUpdate(
+      const updatedUser = await User.findByIdAndUpdate(
         user._id,
         {
           hashedPassword: newHashedPassword,
@@ -83,15 +83,15 @@ class UserController {
     const file = req.file;
     try {
       if (file) {
-        const currentUser = await UserModel.findById(req.user._id);
+        const currentUser = await User.findById(req.user._id);
         data.avatar = await currentUser.generateNewAvatar(file);
         await currentUser.deleteAvatar();
       }
 
       // Update data
-      const editedUser = await UserModel.findByIdAndUpdate(req.user._id, data, { new: true });
+      const editedUser = await User.findByIdAndUpdate(req.user._id, data, { new: true });
 
-      res.status(200).json(editedUser.toProfileJSON());
+      return res.status(200).json(editedUser.toProfileJSON());
     } catch (error) {
       next(error);
     }

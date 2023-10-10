@@ -1,12 +1,13 @@
-import mongoose, { Types } from "mongoose";
-import MongooseDelete from "mongoose-delete";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
+import MongooseDelete from "mongoose-delete";
+import { deleteAttachment, transformAttachment } from "~/utils/attachment";
+import AttachmentSchema from "~/utils/attachment/Schema";
+import { deleteImageCloud, uploadImageCloud } from "~/utils/cloudinary";
 import env from "~/utils/environment";
 import { isEmail } from "~/utils/validation";
-import { transformAttachment, deleteAttachment } from "~/utils/attachment";
-import AttachmentSchema from "~/utils/attachment/Schema";
-import { uploadImageCloud, deleteImageCloud } from "~/utils/cloudinary";
+
 const UserSchema = new mongoose.Schema(
   {
     email: {
@@ -16,11 +17,11 @@ const UserSchema = new mongoose.Schema(
         validator: (value) => isEmail(value),
         message: "Email is invalid",
       },
-      require: [true, "Email is required field"],
+      required: [true, "Email is required field"],
     },
     roles: {
       type: [String],
-      require: true,
+      required: true,
       enum: ["admin", "teacher", "user"],
       default: ["user"],
     },
@@ -29,7 +30,7 @@ const UserSchema = new mongoose.Schema(
       trim: true,
       minLength: [2, "Full name is at least 2 characters"],
       maxLength: [30, "Full name is maximum 30 characters"],
-      require: [true, "Full name is required field"],
+      required: [true, "Full name is required field"],
     },
     username: {
       type: String,

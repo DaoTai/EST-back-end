@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const AttachmentSchema = new mongoose.Schema({
   uri: {
     type: String,
-    require: true,
+    required: true,
   },
   type: {
     type: String,
