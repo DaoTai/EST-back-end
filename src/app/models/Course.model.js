@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 import MongooseDelete from "mongoose-delete";
+import slugify from "~/utils/slugify";
+
 const CourseSchema = new mongoose.Schema(
   {
     name: {
@@ -10,6 +12,7 @@ const CourseSchema = new mongoose.Schema(
     },
     category: {
       type: String,
+      trim: true,
       required: [true, "Category course is required"],
     },
     consumer: {
@@ -45,6 +48,13 @@ const CourseSchema = new mongoose.Schema(
     openDate: String,
     closeDate: String,
     roadmap: String,
+    slug: {
+      type: String,
+      unique: true,
+      default: function () {
+        return slugify(this.name);
+      },
+    },
   },
   {
     timestamps: true,
@@ -65,6 +75,12 @@ const CourseSchema = new mongoose.Schema(
     },
   }
 );
+
+// Validate before update
+CourseSchema.pre(["updateOne", "findOneAndUpdate"], function (next) {
+  this.options.runValidators = true;
+  next();
+});
 
 CourseSchema.plugin(MongooseDelete, {
   deletedAt: true,

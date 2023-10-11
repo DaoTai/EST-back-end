@@ -1,70 +1,58 @@
-import Course from "../models/Course.model";
+import {
+  createCourse,
+  destroyCourse,
+  editCourse,
+  getCourseById,
+  restoreCourse,
+  searchCourse,
+  softDeleteCourse,
+} from "~/services/Course.service";
 class CourseController {
+  // Only my courses
   // [GET] courses
-  async searchCourse(req, res, next) {
+  async search(req, res, next) {
     try {
-      const { page, name, category } = req.query;
-      const perPage = 10;
-      const currentPage = +page || 1;
-      const condition = {};
-      if (name) condition.name = new RegExp(name, "i");
-      if (category) condition.category = new RegExp(category, "i");
-      const courses = await Course.find(condition, {
-        status: 0,
-      })
-        .skip(currentPage * perPage - perPage)
-        .limit(perPage);
-      const totalCourses = await Course.count(condition);
-
-      return res
-        .status(200)
-        .json({ courses, maxPage: Math.ceil(totalCourses / perPage), total: totalCourses });
+      const result = await searchCourse(req.query, req.user._id);
+      return res.status(200).json(result);
     } catch (error) {
       next(error);
     }
   }
 
   // [POST] courses
-  async createCourse(req, res, next) {
+  async create(req, res, next) {
     try {
-      const newCourse = new Course(req.body);
-      newCourse.createdBy = req.user._id;
-      const savedCourse = await newCourse.save();
-      return res.status(201).json(savedCourse);
+      const result = await createCourse(req.body, req.user._id);
+      return res.status(201).json(result);
     } catch (error) {
       next(error);
     }
   }
 
   // [GET] courses/:id
-  async getCourse(req, res, next) {
+  async get(req, res, next) {
     try {
-      const idCourse = req.params;
-      const course = await Course.findById(idCourse);
-      return res.status(200).json(course ? course.getPreview() : course);
+      const course = await getCourseById(req.params.id, req.user._id);
+      return res.status(200).json(course);
     } catch (error) {
       next(error);
     }
   }
 
   // [PATCH] courses/:id
-  async editCourse(req, res, next) {
+  async edit(req, res, next) {
     try {
-      const idCourse = req.params;
-      const data = req.body;
-      await Course.findByIdAndUpdate(idCourse, data);
-
-      return res.sendStatus(200);
+      const result = await editCourse(req.body, req.params.id, req.user._id);
+      return res.status(200).json(result);
     } catch (error) {
       next(error);
     }
   }
 
   // [DELETE] courses/:id
-  async deleteCourse(req, res, next) {
+  async delete(req, res, next) {
     try {
-      const idCourse = req.params;
-      await Course.deleteById(idCourse);
+      await softDeleteCourse(req.params.id);
       return res.sendStatus(204);
     } catch (error) {
       next(error);
@@ -72,12 +60,9 @@ class CourseController {
   }
 
   // [PATCH] courses/:id/restore
-  async restoreCourse(req, res, next) {
+  async restore(req, res, next) {
     try {
-      const idCourse = req.params;
-      await Course.restore({
-        _id: idCourse,
-      });
+      restoreCourse(req.params.id);
       return res.sendStatus(204);
     } catch (error) {
       next(error);
@@ -85,10 +70,9 @@ class CourseController {
   }
 
   // [DELETE] courses/:id/destroy
-  async destroyCourse(req, res, next) {
+  async destroy(req, res, next) {
     try {
-      const idCourse = req.params;
-      await Course.findByIdAndDelete(idCourse);
+      await destroyCourse(req.params.id, req.user._id, req.user.roles);
       return res.sendStatus(204);
     } catch (error) {
       next(error);

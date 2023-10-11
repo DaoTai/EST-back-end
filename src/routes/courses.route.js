@@ -2,14 +2,15 @@ import { Router } from "express";
 import CourseController from "~/app/controllers/Course.controller";
 
 const router = Router();
-router.route("/").get(CourseController.searchCourse).post(CourseController.createCourse);
+router.route("/").get(CourseController.search).post(CourseController.create);
 
 router
   .route("/:id")
-  .get(CourseController.getCourse)
-  .patch(CourseController.editCourse)
-  .delete(CourseController.deleteCourse);
+  .get(CourseController.get)
+  .patch(CourseController.edit)
+  .delete(CourseController.delete);
 
-router.delete("/:id/destroy", CourseController.destroyCourse);
+router.patch("/:id/restore", CourseController.restore);
+router.delete("/:id/destroy", CourseController.destroy);
 
 export default router;
