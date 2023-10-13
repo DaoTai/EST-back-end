@@ -4,15 +4,15 @@ import {
   editCourse,
   getCourseById,
   restoreCourse,
-  searchCourse,
+  getOwnerCourses,
   softDeleteCourse,
 } from "~/services/Course.service";
 class CourseController {
   // Only my courses
   // [GET] courses
-  async search(req, res, next) {
+  async getOwner(req, res, next) {
     try {
-      const result = await searchCourse(req.query, req.user._id);
+      const result = await getOwnerCourses(req.user._id);
       return res.status(200).json(result);
     } catch (error) {
       next(error);
@@ -22,8 +22,8 @@ class CourseController {
   // [POST] courses
   async create(req, res, next) {
     try {
-      const result = await createCourse(req.body, req.user._id);
-      return res.status(201).json(result);
+      const newCourse = await createCourse(req.body, req.user._id, req.files);
+      return res.status(201).json(newCourse.getInfor());
     } catch (error) {
       next(error);
     }
@@ -33,7 +33,7 @@ class CourseController {
   async get(req, res, next) {
     try {
       const course = await getCourseById(req.params.id, req.user._id);
-      return res.status(200).json(course);
+      return res.status(200).json(course ? course.getInfor() : course);
     } catch (error) {
       next(error);
     }

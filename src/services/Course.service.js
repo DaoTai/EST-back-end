@@ -3,27 +3,12 @@ import slugify from "~/utils/slugify";
 
 // For teacher
 // Search
-export const searchCourse = async (query, idUser) => {
-  const { page, name, category } = query;
-  const perPage = 10;
-  const currentPage = +page || 1;
-  const condition = {
+export const getOwnerCourses = async (idUser) => {
+  const courses = await Course.find({
     createdBy: idUser,
-  };
-  if (name) condition.name = new RegExp(name, "i");
-  if (category) condition.category = new RegExp(category, "i");
-  const courses = await Course.find(condition, {
-    status: 0,
-  })
-    .skip(currentPage * perPage - perPage)
-    .limit(perPage);
-  const totalCourses = await Course.count(condition);
+  });
 
-  return {
-    courses,
-    maxPage: Math.ceil(totalCourses / perPage),
-    total: totalCourses,
-  };
+  return courses;
 };
 
 // Get by id
@@ -36,11 +21,15 @@ export const getCourseById = async (idCourse, idUser) => {
 };
 
 // Create
-export const createCourse = async (data, idUser) => {
+export const createCourse = async (data, idUser, files = []) => {
+  const { thumbnail, roadmap } = files;
   const newCourse = new Course({
     ...data,
     createdBy: idUser,
   });
+
+  thumbnail && (await newCourse.uploadThumbnail(thumbnail[0]));
+  roadmap && newCourse.createRoadmap(roadmap[0]);
   return await newCourse.save();
 };
 

@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import MongooseDelete from "mongoose-delete";
-import { deleteAttachment, transformAttachment } from "~/utils/attachment";
+import { deleteAttachment, transformImageUri } from "~/utils/attachment";
 import AttachmentSchema from "~/utils/attachment/Schema";
 import { deleteImageCloud, uploadImageCloud } from "~/utils/cloudinary";
 import env from "~/utils/environment";
@@ -106,7 +106,7 @@ const UserSchema = new mongoose.Schema(
           roles: this.roles,
           fullName: this.fullName,
           username: this.username,
-          avatar: transformAttachment(this.avatar),
+          avatar: transformImageUri(this.avatar),
           bio: this.bio,
           dob: this.dob,
           gender: this.gender,
@@ -127,7 +127,7 @@ const UserSchema = new mongoose.Schema(
           roles: this.roles,
           fullName: this.fullName,
           username: this.username,
-          avatar: transformAttachment(this.avatar),
+          avatar: transformImageUri(this.avatar),
           bio: this.bio,
           dob: this.dob,
           gender: this.gender,
