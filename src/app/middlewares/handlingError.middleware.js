@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { handleErrorValidation } from "~/utils/validation";
 
 const handlingErrorMiddleware = (err, req, res, next) => {
+  console.log("Error: ", err);
   if (err instanceof Error) {
     if (err instanceof mongoose.Error.ValidationError) {
       return res.status(400).json(handleErrorValidation(err));

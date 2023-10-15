@@ -4,9 +4,10 @@ import {
   deleteImageDocAttachment,
   transformImageUri,
   transformDocumentUri,
+  deleteImageAttachment,
 } from "~/utils/attachment";
 import AttachmentSchema from "~/utils/attachment/Schema";
-import { uploadImageCloud } from "~/utils/cloudinary";
+import { deleteImageCloud, uploadImageCloud } from "~/utils/cloudinary";
 import slugify from "~/utils/slugify";
 
 const CourseSchema = new mongoose.Schema(
@@ -36,11 +37,7 @@ const CourseSchema = new mongoose.Schema(
     },
     thumbnail: {
       type: AttachmentSchema,
-      default: {
-        uri: "https://res.cloudinary.com/dunqa7lcz/image/upload/v1697080125/o63sdz2ztvbztiezkt2z.jpg",
-        type: "image",
-        storedBy: "cloudinary",
-      },
+      required: [true, "Thumbnail course is required"],
     },
     type: {
       type: String,
@@ -73,8 +70,8 @@ const CourseSchema = new mongoose.Schema(
     },
     members: [{ type: mongoose.Types.ObjectId, ref: "user" }],
     lessons: [{ type: mongoose.Types.ObjectId, ref: "lesson" }],
-    openDate: String,
-    closeDate: String,
+    openDate: Date,
+    closeDate: Date,
     roadmap: AttachmentSchema,
   },
   {
@@ -120,36 +117,64 @@ const CourseSchema = new mongoose.Schema(
 
       // Get roadmap
       createRoadmap(file) {
-        this.roadmap = {
+        const roadmap = {
           uri: file.filename,
           storedBy: "server",
           type: file.mimetype,
         };
+        this.roadmap = roadmap;
+        return roadmap;
+      },
+
+      // Delete roadmap
+      deleteRoadmap() {
+        this.roadmap && deleteImageDocAttachment(this.roadmap.uri);
       },
 
       // Upload thumbnail to cloudinary
       async uploadThumbnail(file) {
+        let thumbnail;
         try {
           const thumbnailCloud = await uploadImageCloud(file);
           deleteImageDocAttachment(file.filename);
-          this.thumbnail = {
+          thumbnail = {
             uri: thumbnailCloud.url,
             storedBy: "cloudinary",
           };
         } catch (error) {
-          this.thumbnail = {
+          thumbnail = {
             uri: file.filename,
             storedBy: "server",
           };
+        }
+        this.thumbnail = thumbnail;
+
+        return thumbnail;
+      },
+
+      // Delete thumbnail on cloudinary
+      async deleteThumbnail() {
+        try {
+          if (this.thumbnail.storedBy === "server") {
+            deleteImageAttachment(this.thumbnail.uri);
+          } else {
+            await deleteImageCloud(this.thumbnail);
+          }
+        } catch (error) {
+          throw new Error(error);
         }
       },
     },
   }
 );
-
 // Validate before update
 CourseSchema.pre(["updateOne", "findOneAndUpdate"], function (next) {
   this.options.runValidators = true;
+  next();
+});
+
+CourseSchema.pre("deleteOne", function (next) {
+  console.log("This: ", this);
   next();
 });
 

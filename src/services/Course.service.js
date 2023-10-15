@@ -2,7 +2,7 @@ import Course from "~/app/models/Course.model";
 import slugify from "~/utils/slugify";
 
 // For teacher
-// Search
+// Search => Done
 export const getOwnerCourses = async (idUser) => {
   const courses = await Course.find({
     createdBy: idUser,
@@ -11,7 +11,15 @@ export const getOwnerCourses = async (idUser) => {
   return courses;
 };
 
-// Get by id
+// Search softed delete courses
+export const getTrashedCourses = async (idUser) => {
+  const courses = await Course.findDeleted({
+    createdBy: idUser,
+  });
+  return courses;
+};
+
+// Get by id => Done
 export const getCourseById = async (idCourse, idUser) => {
   const course = await Course.findOne({
     _id: idCourse,
@@ -20,7 +28,7 @@ export const getCourseById = async (idCourse, idUser) => {
   return course;
 };
 
-// Create
+// Create => Done
 export const createCourse = async (data, idUser, files = []) => {
   const { thumbnail, roadmap } = files;
   const newCourse = new Course({
@@ -33,18 +41,31 @@ export const createCourse = async (data, idUser, files = []) => {
   return await newCourse.save();
 };
 
-// Edit
-export const editCourse = async (data, idCourse, idUser) => {
+// Edit => Done
+export const editCourse = async (data, idCourse, idUser, files = []) => {
+  const { thumbnail, roadmap } = files;
   const oldCourse = await Course.findOne({
     _id: idCourse,
     createdBy: idUser,
   });
-
   if (oldCourse.name !== data.name) {
     data.slug = slugify(data.name);
   }
 
-  const course = await Course.findOneAndUpdate(
+  const course = new Course();
+  if (thumbnail) {
+    const [resDelete, resThumbnail] = await Promise.all([
+      oldCourse.deleteThumbnail(),
+      course.uploadThumbnail(thumbnail[0]),
+    ]);
+    data.thumbnail = resThumbnail;
+  }
+
+  if (roadmap) {
+    oldCourse.deleteRoadmap();
+    data.roadmap = course.createRoadmap(roadmap[0]);
+  }
+  const editedCourse = await Course.findOneAndUpdate(
     {
       _id: idCourse,
       createdBy: idUser,
@@ -54,7 +75,8 @@ export const editCourse = async (data, idCourse, idUser) => {
       new: true,
     }
   );
-  return course;
+
+  return editedCourse;
 };
 
 // Soft delete
@@ -69,15 +91,16 @@ export const restoreCourse = async (idCourse) => {
   });
 };
 
-// Destroy: Allow owner or admin
+// Destroy: Allow owner or admin => Done
 export const destroyCourse = async (idCourse, idUser, roles) => {
   const course = await Course.findOneWithDeleted({
     _id: idCourse,
   });
   const isOwner = String(course.createdBy) === idUser;
   if (roles.includes("admin") || isOwner) {
-    await Course.deleteOne({
+    const deletedCouse = await Course.findOneAndDelete({
       _id: idCourse,
     });
+    await Promise.all([deletedCouse.deleteThumbnail(), deletedCouse.deleteRoadmap()]);
   }
 };

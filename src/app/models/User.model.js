@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import MongooseDelete from "mongoose-delete";
-import { deleteAttachment, transformImageUri } from "~/utils/attachment";
+import { deleteImageAttachment, transformImageUri } from "~/utils/attachment";
 import AttachmentSchema from "~/utils/attachment/Schema";
 import { deleteImageCloud, uploadImageCloud } from "~/utils/cloudinary";
 import env from "~/utils/environment";
@@ -175,12 +175,9 @@ const UserSchema = new mongoose.Schema(
       async deleteAvatar() {
         try {
           if (this.avatar.storedBy === "server") {
-            deleteAttachment(this.avatar.uri);
+            deleteImageAttachment(this.avatar.uri);
           } else {
-            // Get public_id of image on cloudinary
-            const lastNameUri = this.avatar.uri.split("/").pop();
-            const id = lastNameUri.split(".")[0];
-            await deleteImageCloud(id);
+            await deleteImageCloud(this.avatar);
           }
         } catch (error) {
           throw new Error(error);
@@ -193,7 +190,7 @@ const UserSchema = new mongoose.Schema(
           const imageCloud = await uploadImageCloud(file);
 
           // Xoá file tạm trong thư mục
-          deleteAttachment(file.filename);
+          deleteImageAttachment(file.filename);
           return {
             uri: imageCloud.url,
             storedBy: "cloudinary",

@@ -6,6 +6,7 @@ import {
   restoreCourse,
   getOwnerCourses,
   softDeleteCourse,
+  getTrashedCourses,
 } from "~/services/Course.service";
 class CourseController {
   // Only my courses
@@ -13,6 +14,16 @@ class CourseController {
   async getOwner(req, res, next) {
     try {
       const result = await getOwnerCourses(req.user._id);
+      return res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // [GET] trashes
+  async getOwnerTrashes(req, res, next) {
+    try {
+      const result = await getTrashedCourses(req.user._id);
       return res.status(200).json(result);
     } catch (error) {
       next(error);
@@ -42,8 +53,8 @@ class CourseController {
   // [PATCH] courses/:id
   async edit(req, res, next) {
     try {
-      const result = await editCourse(req.body, req.params.id, req.user._id);
-      return res.status(200).json(result);
+      const result = await editCourse(req.body, req.params.id, req.user._id, req.files);
+      return res.status(200).json(result ? result.getInfor() : course);
     } catch (error) {
       next(error);
     }

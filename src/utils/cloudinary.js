@@ -19,9 +19,21 @@ export const uploadImageCloud = async (file) => {
   }
 };
 
-export const deleteImageCloud = async (publicId) => {
+export const deleteFileCloudById = async (publicId) => {
   try {
     await cloudinary.v2.uploader.destroy(publicId);
+  } catch (error) {
+    throw new Error("Delete file cloudinary failed");
+  }
+};
+
+export const deleteImageCloud = async (attachment) => {
+  if (attachment.storedBy !== "cloudinary") return;
+  try {
+    const lastNameUri = attachment.uri.split("/").pop();
+    // Get public id
+    const id = lastNameUri.split(".")[0];
+    await deleteFileCloudById(id);
   } catch (error) {
     throw new Error("Delete image cloudinary failed");
   }

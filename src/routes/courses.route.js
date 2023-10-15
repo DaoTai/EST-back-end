@@ -15,11 +15,12 @@ const uploadFiles = uploadDocument.fields([
 
 const router = Router();
 router.route("/").get(CourseController.getOwner).post(uploadFiles, CourseController.create);
+router.get("/trashes", CourseController.getOwnerTrashes);
 
 router
   .route("/:id")
   .get(CourseController.get)
-  .patch(CourseController.edit)
+  .patch(uploadFiles, CourseController.edit)
   .delete(CourseController.delete);
 
 router.patch("/:id/restore", CourseController.restore);

@@ -30,7 +30,7 @@ export const deleteImageDocAttachment = async (attachmentName) => {
   const attachmentPath = path.join(env.DOCUMENT_SERVER_PATH, attachmentName);
   fs.unlink(attachmentPath, (err) => {
     if (err) {
-      console.error("Failed to delete image", err);
+      console.error("Failed to delete document", err);
     }
   });
 };
