@@ -1,19 +1,8 @@
 import mongoose from "mongoose";
 import AttachmentSchema from "~/utils/attachment/Schema";
 
-const VoteSchema = mongoose.Schema({
-  user: {
-    type: mongoose.Types.ObjectId,
-    ref: "user",
-  },
-  rating: {
-    type: Number,
-    max: 5,
-  },
-});
-
 const LessonSchema = new mongoose.Schema({
-  courseId: {
+  course: {
     type: mongoose.Types.ObjectId,
     ref: "course",
     required: [true, "Course is invalid"],
@@ -25,7 +14,6 @@ const LessonSchema = new mongoose.Schema({
   video: {
     type: AttachmentSchema,
   },
-  votes: [VoteSchema],
   comment: [
     {
       type: mongoose.Types.ObjectId,

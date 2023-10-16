@@ -116,6 +116,8 @@ const CourseSchema = new mongoose.Schema(
           closeDate: this.closeDate,
           createdAt: this.createdAt,
           updatedAt: this.updatedAt,
+          deleted: this.deleted,
+          deletedAt: this.deletedAt,
           thumbnail: transformImageUri(this.thumbnail),
           roadmap: transformDocumentUri(this.roadmap),
         };
