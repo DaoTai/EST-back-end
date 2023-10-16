@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import MongooseDelete from "mongoose-delete";
 import AttachmentSchema from "~/utils/attachment/Schema";
 
 const VoteSchema = mongoose.Schema({
@@ -40,9 +39,7 @@ const LessonSchema = new mongoose.Schema({
     },
   ],
 });
-LessonSchema.plugin(MongooseDelete, {
-  overrideMethods: true,
-});
+
 const LessonModel = mongoose.model("lesson", LessonSchema);
 
 export default LessonModel;

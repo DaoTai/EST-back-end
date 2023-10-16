@@ -6,6 +6,7 @@ import slugify from "~/utils/slugify";
 export const getOwnerCourses = async (idUser) => {
   const courses = await Course.find({
     createdBy: idUser,
+    deleted: false,
   });
 
   return courses;
@@ -13,8 +14,10 @@ export const getOwnerCourses = async (idUser) => {
 
 // Search softed delete courses
 export const getTrashedCourses = async (idUser) => {
-  const courses = await Course.findDeleted({
+  // 16/10/2023: method findDeleted not working
+  const courses = await Course.find({
     createdBy: idUser,
+    deleted: true,
   });
   return courses;
 };
@@ -79,28 +82,46 @@ export const editCourse = async (data, idCourse, idUser, files = []) => {
   return editedCourse;
 };
 
-// Soft delete
+// Soft delete => Done
 export const softDeleteCourse = async (idCourse) => {
-  await Course.deleteById(idCourse);
+  await Course.updateOne(
+    {
+      _id: idCourse,
+    },
+    {
+      deleted: true,
+      deletedAt: new Date(),
+    }
+  );
 };
 
-// Restore
+// Restore => Done
 export const restoreCourse = async (idCourse) => {
-  await Course.restore({
-    _id: idCourse,
-  });
+  // Convert flag deleted and remove field deletedAt
+  await Course.updateOne(
+    {
+      _id: idCourse,
+    },
+    {
+      deleted: false,
+      $unset: { deletedAt: 1 },
+    }
+  );
 };
 
 // Destroy: Allow owner or admin => Done
 export const destroyCourse = async (idCourse, idUser, roles) => {
-  const course = await Course.findOneWithDeleted({
+  const course = await Course.findOne({
     _id: idCourse,
+    deleted: true,
   });
-  const isOwner = String(course.createdBy) === idUser;
-  if (roles.includes("admin") || isOwner) {
-    const deletedCouse = await Course.findOneAndDelete({
-      _id: idCourse,
-    });
-    await Promise.all([deletedCouse.deleteThumbnail(), deletedCouse.deleteRoadmap()]);
+  if (course) {
+    const isOwner = String(course.createdBy) === idUser;
+    if (roles.includes("admin") || isOwner) {
+      const deletedCouse = await Course.findOneAndDelete({
+        _id: idCourse,
+      });
+      await Promise.all([deletedCouse.deleteThumbnail(), deletedCouse.deleteRoadmap()]);
+    }
   }
 };

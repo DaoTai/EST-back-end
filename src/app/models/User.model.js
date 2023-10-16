@@ -1,7 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
-import MongooseDelete from "mongoose-delete";
 import { deleteImageAttachment, transformImageUri } from "~/utils/attachment";
 import AttachmentSchema from "~/utils/attachment/Schema";
 import { deleteImageCloud, uploadImageCloud } from "~/utils/cloudinary";
@@ -226,8 +225,6 @@ const UserSchema = new mongoose.Schema(
     },
   }
 );
-
-UserSchema.plugin(MongooseDelete, { deletedAt: true, overrideMethods: true, deletedBy: true });
 
 const UserModel = mongoose.model("User", UserSchema);
 export default UserModel;

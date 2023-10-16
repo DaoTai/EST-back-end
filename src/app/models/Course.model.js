@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import MongooseDelete from "mongoose-delete";
 import {
   deleteImageDocAttachment,
   transformImageUri,
@@ -73,6 +72,13 @@ const CourseSchema = new mongoose.Schema(
     openDate: Date,
     closeDate: Date,
     roadmap: AttachmentSchema,
+    deleted: {
+      type: Boolean,
+      default: false,
+    },
+    deletedAt: {
+      type: Date,
+    },
   },
   {
     timestamps: true,
@@ -155,10 +161,10 @@ const CourseSchema = new mongoose.Schema(
       // Delete thumbnail on cloudinary
       async deleteThumbnail() {
         try {
-          if (this.thumbnail.storedBy === "server") {
-            deleteImageAttachment(this.thumbnail.uri);
-          } else {
-            await deleteImageCloud(this.thumbnail);
+          if (this.thumbnail) {
+            this.thumbnail?.storedBy === "server"
+              ? deleteImageAttachment(this.thumbnail.uri)
+              : await deleteImageCloud(this.thumbnail);
           }
         } catch (error) {
           throw new Error(error);
@@ -167,20 +173,11 @@ const CourseSchema = new mongoose.Schema(
     },
   }
 );
+
 // Validate before update
 CourseSchema.pre(["updateOne", "findOneAndUpdate"], function (next) {
   this.options.runValidators = true;
   next();
-});
-
-CourseSchema.pre("deleteOne", function (next) {
-  console.log("This: ", this);
-  next();
-});
-
-CourseSchema.plugin(MongooseDelete, {
-  deletedAt: true,
-  overrideMethods: true,
 });
 
 const CourseModel = mongoose.model("course", CourseSchema);
