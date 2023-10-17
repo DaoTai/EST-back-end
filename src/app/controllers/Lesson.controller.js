@@ -17,6 +17,14 @@ class LessonController {
     }
   }
 
+  // [GET] /lessons//user/:idCourse
+  async getBySlug(req, res, next) {
+    try {
+    } catch (error) {
+      next(error);
+    }
+  }
+
   // [POST] /lessons/:idCourse
   async create(req, res, next) {
     try {
@@ -27,7 +35,7 @@ class LessonController {
     }
   }
 
-  // [GET] /lessons/detail:id
+  // [GET] /lessons/detail/:id
   async getById(req, res, next) {
     try {
       const lesson = await getLessonById(req.params.id);
@@ -37,17 +45,17 @@ class LessonController {
     }
   }
 
-  // [PATCH] /lessons/detail:id
+  // [PATCH] /lessons/detail/:id
   async edit(req, res, next) {
     try {
       const lesson = await editLesson(req.params.id, req.body, req.file);
-      return res.status(200).json(lesson.getInfor());
+      return res.status(200).json(lesson ? lesson.getInfor() : lesson);
     } catch (error) {
       next(error);
     }
   }
 
-  // [DELETE] /lessons/detail:id
+  // [DELETE] /lessons/detail/:id
   async delete(req, res, next) {
     try {
       await deleteLesson(req.params.id);

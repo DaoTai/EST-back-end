@@ -12,7 +12,7 @@ export const getOwnerCourses = async (idUser) => {
   return courses;
 };
 
-// Search softed delete courses
+// Search softed delete courses => Done
 export const getTrashedCourses = async (idUser) => {
   // 16/10/2023: method findDeleted not working
   const courses = await Course.find({
@@ -125,3 +125,6 @@ export const destroyCourse = async (idCourse, idUser, roles) => {
     }
   }
 };
+
+// Register course by user
+export const registerCourse = async (idCourse, idUser) => {};

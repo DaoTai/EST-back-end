@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { transformAttachmentUri } from "~/utils/attachment";
+import { deleteServerAttachment, transformAttachmentUri } from "~/utils/attachment";
 import AttachmentSchema from "~/utils/attachment/Schema";
 import slugify from "~/utils/slugify";
 
@@ -72,6 +72,22 @@ const LessonSchema = new mongoose.Schema(
           video: transformAttachmentUri(this.video, "video"),
           thumbnail: transformAttachmentUri(this.course.thumbnail, "image"),
         };
+      },
+
+      // Create & store video
+      createVideo(file) {
+        const video = {
+          uri: file.filename,
+          storedBy: "server",
+          type: file.mimetype,
+        };
+        this.video = video;
+        return video;
+      },
+
+      // Delete videp
+      deleteVideo() {
+        this.video && deleteServerAttachment(this.video.uri, "video");
       },
     },
   }

@@ -22,6 +22,7 @@ export const createLesson = async (idCourse, data, file) => {
     course: idCourse,
     ...data,
   });
+  newLesson.createVideo(file);
   return await newLesson.save();
 };
 
@@ -36,16 +37,35 @@ export const editLesson = async (idLesson, data, file) => {
   };
 
   const lesson = await Lesson.findById(idLesson);
-  if (values.name && values.name !== lesson.name) values.slug = slugify(values.name);
-  const editedLesson = await Lesson.findByIdAndUpdate(idLesson, values);
+  if (!lesson) return null;
 
+  if (values.name && values.name !== lesson.name) values.slug = slugify(values.name);
+
+  if (file) {
+    const newLesson = new Lesson();
+    values.video = newLesson.createVideo(file);
+    lesson.deleteVideo();
+  }
+
+  const editedLesson = await Lesson.findByIdAndUpdate(idLesson, values, {
+    new: true,
+  });
   return editedLesson;
 };
 
 // Delete lesson
 export const deleteLesson = async (idLesson) => {
   if (!idLesson) return;
-  return await Lesson.deleteOne({
-    _id: idLesson,
+  const deletedLesson = await Lesson.findByIdAndDelete(idLesson);
+  deletedLesson.deleteVideo();
+  return deletedLesson;
+};
+
+// Get by slug lesson
+export const getLessonBySlug = async (slug, idUser) => {
+  if (!slug || !idUser) return null;
+
+  const lesson = await Lesson.findOne({
+    slug: slug,
   });
 };
