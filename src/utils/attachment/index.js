@@ -1,36 +1,52 @@
 import fs from "fs";
 import path from "path";
 import env from "../environment";
-export const transformImageUri = (attachment) => {
-  if (attachment?.storedBy === "server") {
-    attachment.uri = `http://${env.HOST_NAME}:${env.PORT}/${env.STATIC_IMAGES_FOLDER}/${attachment.uri}`;
-  }
-  return attachment;
-};
 
-export const transformDocumentUri = (attachment) => {
-  if (attachment?.storedBy === "server") {
-    attachment.uri = `http://${env.HOST_NAME}:${env.PORT}/${env.STATIC_DOCUMENTS_FOLDER}/${attachment.uri}`;
-  }
-  return attachment;
-};
-
-export const deleteImageAttachment = async (attachmentName) => {
-  if (!attachmentName) return;
-  const attachmentPath = path.join(env.IMAGES_SERVER_PATH, attachmentName);
-  fs.unlink(attachmentPath, (err) => {
-    if (err) {
-      console.error("Failed to delete image", err);
+export const transformAttachmentUri = (attachment, type) => {
+  if (!attachment || !type) return;
+  // Vì tính chất tham chiếu nó sẽ trỏ tới params attachment
+  // Khi xảy ra vòng lặp tại chỉ 1 course thì sẽ hoạt động ko mong muốn
+  const attach = { ...attachment._doc };
+  if (attach?.storedBy === "server") {
+    let uri = "";
+    switch (type) {
+      case "image":
+        uri = env.STATIC_IMAGES_FOLDER;
+        break;
+      case "document":
+        uri = env.STATIC_DOCUMENTS_FOLDER;
+        break;
+      case "video":
+        uri = env.STATIC_VIDEOS_FOLDER;
+        break;
+      default:
+        throw new Error("Type is invalid");
     }
-  });
+    attach.uri = `http://${env.HOST_NAME}:${env.PORT}/${uri}/${attach.uri}`;
+  }
+  return attach;
 };
 
-export const deleteImageDocAttachment = async (attachmentName) => {
+export const deleteServerAttachment = (attachmentName, type) => {
   if (!attachmentName) return;
-  const attachmentPath = path.join(env.DOCUMENT_SERVER_PATH, attachmentName);
+  let uri = "";
+  switch (type) {
+    case "image":
+      uri = env.IMAGES_SERVER_PATH;
+      break;
+    case "document":
+      uri = env.DOCUMENTS_SERVER_PATH;
+      break;
+    case "video":
+      uri = env.VIDEOS_SERVER_PATH;
+      break;
+    default:
+      throw new Error("Type is invalid");
+  }
+  const attachmentPath = path.join(uri, attachmentName);
   fs.unlink(attachmentPath, (err) => {
     if (err) {
-      console.error("Failed to delete document", err);
+      console.error(`Failed to delete ${type}`, err);
     }
   });
 };

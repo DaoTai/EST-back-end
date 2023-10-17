@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
-import { deleteImageAttachment, transformImageUri } from "~/utils/attachment";
+import { deleteServerAttachment, transformAttachmentUri } from "~/utils/attachment";
 import AttachmentSchema from "~/utils/attachment/Schema";
 import { deleteImageCloud, uploadImageCloud } from "~/utils/cloudinary";
 import env from "~/utils/environment";
@@ -105,7 +105,7 @@ const UserSchema = new mongoose.Schema(
           roles: this.roles,
           fullName: this.fullName,
           username: this.username,
-          avatar: transformImageUri(this.avatar),
+          avatar: transformAttachmentUri(this.avatar, "image"),
           bio: this.bio,
           dob: this.dob,
           gender: this.gender,
@@ -121,21 +121,7 @@ const UserSchema = new mongoose.Schema(
       // Get infor user + accessToken + refreshToken
       toAuthJSON() {
         return {
-          _id: this._id,
-          email: this.email,
-          roles: this.roles,
-          fullName: this.fullName,
-          username: this.username,
-          avatar: transformImageUri(this.avatar),
-          bio: this.bio,
-          dob: this.dob,
-          gender: this.gender,
-          school: this.school,
-          city: this.city,
-          provider: this.provider,
-          favouriteProrammingLanguages: this.favouriteProrammingLanguages,
-          updatedAt: this.updatedAt,
-          createdAt: this.createdAt,
+          ...this.toProfileJSON(),
           accessToken: this.generateAccessToken(),
           refreshToken: this.generateRefreshToken(),
         };
@@ -174,7 +160,7 @@ const UserSchema = new mongoose.Schema(
       async deleteAvatar() {
         try {
           if (this.avatar.storedBy === "server") {
-            deleteImageAttachment(this.avatar.uri);
+            deleteServerAttachment(this.avatar.uri, "image");
           } else {
             await deleteImageCloud(this.avatar);
           }
@@ -189,7 +175,7 @@ const UserSchema = new mongoose.Schema(
           const imageCloud = await uploadImageCloud(file);
 
           // Xoá file tạm trong thư mục
-          deleteImageAttachment(file.filename);
+          deleteServerAttachment(file.filename, "image");
           return {
             uri: imageCloud.url,
             storedBy: "cloudinary",

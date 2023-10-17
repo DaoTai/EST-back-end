@@ -68,7 +68,6 @@ class AuthController {
       if (!user) return res.status(401).json("User is not exist");
 
       const payload = user.toAuthJSON();
-
       // Kiểm tra user đăng nhập theo tài khoản đã đăng ký theo app (có password)
       if (!provider && password && user.hashedPassword) {
         const isValidPwd = userLogin.isValidPassword(password, user.hashedPassword);

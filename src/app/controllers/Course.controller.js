@@ -73,7 +73,6 @@ class CourseController {
   // [PATCH] courses/:id/restore
   async restore(req, res, next) {
     try {
-      console.log("hello");
       restoreCourse(req.params.id);
       return res.sendStatus(204);
     } catch (error) {

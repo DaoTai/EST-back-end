@@ -13,7 +13,7 @@ const storageImage = multer.diskStorage({
 
 const storageDocument = multer.diskStorage({
   destination: (req, file, cb) => {
-    return cb(null, env.DOCUMENT_SERVER_PATH);
+    return cb(null, env.DOCUMENTS_SERVER_PATH);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 150);

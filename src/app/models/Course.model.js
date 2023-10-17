@@ -1,10 +1,5 @@
 import mongoose from "mongoose";
-import {
-  deleteImageDocAttachment,
-  transformImageUri,
-  transformDocumentUri,
-  deleteImageAttachment,
-} from "~/utils/attachment";
+import { deleteServerAttachment, transformAttachmentUri } from "~/utils/attachment";
 import AttachmentSchema from "~/utils/attachment/Schema";
 import { deleteImageCloud, uploadImageCloud } from "~/utils/cloudinary";
 import slugify from "~/utils/slugify";
@@ -118,8 +113,8 @@ const CourseSchema = new mongoose.Schema(
           updatedAt: this.updatedAt,
           deleted: this.deleted,
           deletedAt: this.deletedAt,
-          thumbnail: transformImageUri(this.thumbnail),
-          roadmap: transformDocumentUri(this.roadmap),
+          thumbnail: transformAttachmentUri(this.thumbnail, "image"),
+          roadmap: transformAttachmentUri(this.roadmap, "document"),
         };
       },
 
@@ -136,7 +131,7 @@ const CourseSchema = new mongoose.Schema(
 
       // Delete roadmap
       deleteRoadmap() {
-        this.roadmap && deleteImageDocAttachment(this.roadmap.uri);
+        this.roadmap && deleteServerAttachment(this.roadmap.uri, "document");
       },
 
       // Upload thumbnail to cloudinary
@@ -144,7 +139,7 @@ const CourseSchema = new mongoose.Schema(
         let thumbnail;
         try {
           const thumbnailCloud = await uploadImageCloud(file);
-          deleteImageDocAttachment(file.filename);
+          deleteServerAttachment(file.filename, "document");
           thumbnail = {
             uri: thumbnailCloud.url,
             storedBy: "cloudinary",
@@ -165,7 +160,7 @@ const CourseSchema = new mongoose.Schema(
         try {
           if (this.thumbnail) {
             this.thumbnail?.storedBy === "server"
-              ? deleteImageAttachment(this.thumbnail.uri)
+              ? deleteServerAttachment(this.thumbnail.uri, "image")
               : await deleteImageCloud(this.thumbnail);
           }
         } catch (error) {
