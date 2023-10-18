@@ -17,13 +17,14 @@ const CourseSchema = new mongoose.Schema(
       trim: true,
       required: [true, "Category course is required"],
     },
-    consumer: {
+    level: {
       type: String,
       enum: {
         values: ["beginner", "fresher", "junior", "senior", "all"],
-        message: "Consumer is invalid",
+        message: "Level is invalid",
       },
       default: "all",
+      required: [true, "Level is required"],
     },
     intro: {
       type: String,
@@ -84,36 +85,28 @@ const CourseSchema = new mongoose.Schema(
           _id: this._id,
           name: this.name,
           category: this.category,
-          consumer: this.consumer,
+          level: this.level,
           intro: this.intro,
           type: this.type,
           members: this.members,
           openDate: this.openDate,
           closeDate: this.closeDate,
+          thumbnail: transformAttachmentUri(this.thumbnail, "image"),
         };
       },
 
       // Detail for teacher
       getInfor() {
         return {
-          _id: this._id,
-          name: this.name,
-          category: this.category,
-          consumer: this.consumer,
-          intro: this.intro,
-          type: this.type,
+          ...this.getPreview(),
           status: this.status,
           createdBy: this.createdBy,
           slug: this.slug,
-          members: this.members,
           lessons: this.lessons,
-          openDate: this.openDate,
-          closeDate: this.closeDate,
           createdAt: this.createdAt,
           updatedAt: this.updatedAt,
           deleted: this.deleted,
           deletedAt: this.deletedAt,
-          thumbnail: transformAttachmentUri(this.thumbnail, "image"),
           roadmap: transformAttachmentUri(this.roadmap, "document"),
         };
       },

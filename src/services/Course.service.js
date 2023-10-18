@@ -51,7 +51,8 @@ export const editCourse = async (data, idCourse, idUser, files = []) => {
     _id: idCourse,
     createdBy: idUser,
   });
-  if (oldCourse.name !== data.name) {
+
+  if (data.name && oldCourse.name !== data.name) {
     data.slug = slugify(data.name);
   }
 
@@ -68,6 +69,9 @@ export const editCourse = async (data, idCourse, idUser, files = []) => {
     oldCourse.deleteRoadmap();
     data.roadmap = course.createRoadmap(roadmap[0]);
   }
+
+  console.log("data: ", data);
+
   const editedCourse = await Course.findOneAndUpdate(
     {
       _id: idCourse,
@@ -124,6 +128,21 @@ export const destroyCourse = async (idCourse, idUser, roles) => {
       await Promise.all([deletedCouse.deleteThumbnail(), deletedCouse.deleteRoadmap()]);
     }
   }
+};
+
+// Search courses by visitor
+export const searchCourses = async ({ perPage, currentPage, condition }) => {
+  const courses = await Course.find(condition, {
+    status: 0,
+  })
+    .skip(currentPage * perPage - perPage)
+    .limit(perPage);
+  const totalCourses = await Course.count(condition);
+  return {
+    courses: courses.map((course) => course.getPreview()),
+    maxPage: Math.ceil(totalCourses / perPage),
+    total: totalCourses,
+  };
 };
 
 // Register course by user

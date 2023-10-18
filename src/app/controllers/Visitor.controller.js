@@ -1,3 +1,4 @@
+import { searchCourses } from "~/services/Course.service";
 import Course from "../models/Course.model";
 
 class VisitorController {
@@ -14,16 +15,13 @@ class VisitorController {
       };
       if (name) condition.name = new RegExp(name, "i");
       if (category) condition.category = new RegExp(category, "i");
-      const courses = await Course.find(condition, {
-        status: 0,
-      })
-        .skip(currentPage * perPage - perPage)
-        .limit(perPage);
-      const totalCourses = await Course.count(condition);
 
-      return res
-        .status(200)
-        .json({ courses, maxPage: Math.ceil(totalCourses / perPage), total: totalCourses });
+      const result = await searchCourses({
+        perPage,
+        currentPage,
+        condition,
+      });
+      return res.status(200).json(result);
     } catch (error) {
       next(error);
     }
