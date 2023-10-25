@@ -191,7 +191,7 @@ const UserSchema = new mongoose.Schema(
 
       // Checking existed user with provider
       async isExistByProvider(email, provider) {
-        const isExist = await mongoose.model("User").findOne({
+        const isExist = await mongoose.model("user").findOne({
           email,
           provider,
         });
@@ -200,7 +200,7 @@ const UserSchema = new mongoose.Schema(
 
       // Checking existed user with password
       async isExistByPassword(email) {
-        const isExist = await mongoose.model("User").findOne({
+        const isExist = await mongoose.model("user").findOne({
           email,
           hashedPassword: {
             $exists: true,
@@ -212,5 +212,5 @@ const UserSchema = new mongoose.Schema(
   }
 );
 
-const UserModel = mongoose.model("User", UserSchema);
+const UserModel = mongoose.model("user", UserSchema);
 export default UserModel;

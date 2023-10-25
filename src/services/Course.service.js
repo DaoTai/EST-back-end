@@ -1,4 +1,5 @@
 import Course from "~/app/models/Course.model";
+import Lesson from "~/app/models/Lesson.model";
 import slugify from "~/utils/slugify";
 
 // For teacher
@@ -8,7 +9,6 @@ export const getOwnerCourses = async (idUser) => {
     createdBy: idUser,
     deleted: false,
   });
-
   return courses;
 };
 
@@ -70,8 +70,6 @@ export const editCourse = async (data, idCourse, idUser, files = []) => {
     data.roadmap = course.createRoadmap(roadmap[0]);
   }
 
-  console.log("data: ", data);
-
   const editedCourse = await Course.findOneAndUpdate(
     {
       _id: idCourse,
@@ -114,6 +112,7 @@ export const restoreCourse = async (idCourse) => {
 };
 
 // Destroy: Allow owner or admin => Done
+// Xoá course + lessons
 export const destroyCourse = async (idCourse, idUser, roles) => {
   const course = await Course.findOne({
     _id: idCourse,
@@ -125,7 +124,14 @@ export const destroyCourse = async (idCourse, idUser, roles) => {
       const deletedCouse = await Course.findOneAndDelete({
         _id: idCourse,
       });
-      await Promise.all([deletedCouse.deleteThumbnail(), deletedCouse.deleteRoadmap()]);
+      // Delete: thumbnail + roadmap + lessons
+      await Promise.all([
+        deletedCouse.deleteThumbnail(),
+        deletedCouse.deleteRoadmap(),
+        Lesson.deleteMany({
+          _id: { $in: deletedCouse.lessons },
+        }),
+      ]);
     }
   }
 };
@@ -135,6 +141,7 @@ export const searchCourses = async ({ perPage, currentPage, condition }) => {
   const courses = await Course.find(condition, {
     status: 0,
   })
+    .populate("createdBy", "username avatar")
     .skip(currentPage * perPage - perPage)
     .limit(perPage);
   const totalCourses = await Course.count(condition);

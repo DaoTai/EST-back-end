@@ -6,7 +6,7 @@ class VisitorController {
   async searchCourse(req, res, next) {
     try {
       const { page, name, category } = req.query;
-      const perPage = 10;
+      const perPage = 2;
       const currentPage = +page || 1;
 
       // Only approved courses

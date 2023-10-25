@@ -91,6 +91,7 @@ const CourseSchema = new mongoose.Schema(
           members: this.members,
           openDate: this.openDate,
           closeDate: this.closeDate,
+          createdBy: this.createdBy,
           thumbnail: transformAttachmentUri(this.thumbnail, "image"),
         };
       },
@@ -100,7 +101,6 @@ const CourseSchema = new mongoose.Schema(
         return {
           ...this.getPreview(),
           status: this.status,
-          createdBy: this.createdBy,
           slug: this.slug,
           lessons: this.lessons,
           createdAt: this.createdAt,

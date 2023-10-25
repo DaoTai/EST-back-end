@@ -14,6 +14,7 @@ const LessonSchema = new mongoose.Schema(
       type: String,
       required: [true, "Name lesson is required"],
       trim: true,
+      minLength: [3, "Name lesson is least at 3 characters"],
     },
     slug: {
       type: String,

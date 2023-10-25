@@ -17,6 +17,7 @@ const env = {
   CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
   URI_FRONT_END: process.env.URI_FRONT_END,
+  BUILD_MODE: process.env.BUILD_MODE,
 };
 
 export default env;

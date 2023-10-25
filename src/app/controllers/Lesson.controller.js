@@ -10,8 +10,14 @@ class LessonController {
   // [GET] /lessons/:idCourse
   async getByIdCourse(req, res, next) {
     try {
-      const listLessons = await getLessonsByIdCourse(req.params.idCourse);
-      return res.status(200).json(listLessons);
+      const page = +req.query.page || 1;
+      const perPage = 5;
+      const result = await getLessonsByIdCourse({
+        perPage,
+        idCourse: req.params.idCourse,
+        currentPage: page,
+      });
+      return res.status(200).json(result);
     } catch (error) {
       next(error);
     }
@@ -39,7 +45,7 @@ class LessonController {
   async getById(req, res, next) {
     try {
       const lesson = await getLessonById(req.params.id);
-      return res.status(200).json(lesson ? lesson.getInfor() : lesson);
+      return res.status(200).json(lesson);
     } catch (error) {
       next(error);
     }
