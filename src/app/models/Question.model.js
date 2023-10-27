@@ -18,6 +18,13 @@ const QuestionSchema = new mongoose.Schema(
       required: [true, "Question category is required"],
     },
     expiredTime: Date,
+    answers: [
+      {
+        type: String,
+        trim: true,
+        minLength: [1, "Answer is not allowed to empty"],
+      },
+    ],
     correctAnswers: [
       {
         type: String,

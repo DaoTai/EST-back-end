@@ -45,7 +45,7 @@ export const editQuestion = async (idQuestion, data) => {
     return await Question.findByIdAndUpdate(
       idQuestion,
       {
-        data,
+        ...data,
         $unset: {
           correctAnswers: 1,
         },

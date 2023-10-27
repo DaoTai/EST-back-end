@@ -30,6 +30,7 @@ class QuestionController {
   // [GET] /questions/detail/:id
   async getById(req, res, next) {
     try {
+      if (!req.params.id) return res.status(400).json("Question is invalid");
       const question = await getQuestionById(req.params.id);
       return res.status(200).json(question);
     } catch (error) {
@@ -40,6 +41,7 @@ class QuestionController {
   // [PATCH] /questions/detail/:id
   async edit(req, res, next) {
     try {
+      if (!req.params.id) return res.status(400).json("Question is invalid");
       const question = await editQuestion(req.params.id, req.body);
       return res.status(200).json(question);
     } catch (error) {
@@ -50,6 +52,7 @@ class QuestionController {
   //   [DELETE] /questions/detail/:id
   async delete(req, res, next) {
     try {
+      if (!req.params.id) return res.status(400).json("Question is invalid");
       await deleteQuestion(req.params.id);
       return res.sendStatus(204);
     } catch (error) {
