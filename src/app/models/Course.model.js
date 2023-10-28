@@ -65,6 +65,7 @@ const CourseSchema = new mongoose.Schema(
     },
     members: [{ type: mongoose.Types.ObjectId, ref: "user" }],
     lessons: [{ type: mongoose.Types.ObjectId, ref: "lesson" }],
+
     openDate: Date,
     closeDate: Date,
     roadmap: AttachmentSchema,

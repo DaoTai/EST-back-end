@@ -3,6 +3,22 @@ import { deleteServerAttachment, transformAttachmentUri } from "~/utils/attachme
 import AttachmentSchema from "~/utils/attachment/Schema";
 import slugify from "~/utils/slugify";
 
+const ReportSchema = new mongoose.Schema(
+  {
+    sender: {
+      type: mongoose.Types.ObjectId,
+      ref: "user",
+    },
+    message: {
+      type: String,
+      required: [true, "Message report is required"],
+      minLength: [5, "Message report is at least 5 character"],
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 const LessonSchema = new mongoose.Schema(
   {
     course: {
@@ -55,6 +71,12 @@ const LessonSchema = new mongoose.Schema(
         ref: "question",
       },
     ],
+    reports: [
+      {
+        type: ReportSchema,
+        default: [],
+      },
+    ],
   },
   {
     timestamps: true,
@@ -70,6 +92,7 @@ const LessonSchema = new mongoose.Schema(
           references: this.references,
           comments: this.comments,
           questions: this.questions,
+          reports: this.reports,
           video: transformAttachmentUri(this.video, "video"),
           thumbnail: transformAttachmentUri(this.course.thumbnail, "image"),
         };

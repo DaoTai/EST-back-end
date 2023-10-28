@@ -2,7 +2,7 @@ import Course from "~/app/models/Course.model";
 import Lesson from "~/app/models/Lesson.model";
 import slugify from "~/utils/slugify";
 
-// For teacher
+// ======== For teacher  ========
 // Search => Done
 export const getOwnerCourses = async (idUser) => {
   const courses = await Course.find({
@@ -136,7 +136,8 @@ export const destroyCourse = async (idCourse, idUser, roles) => {
   }
 };
 
-// Search courses by visitor
+// ======== For visitor  ========
+// Search courses by visitor => Done
 export const searchCourses = async ({ perPage, currentPage, condition }) => {
   const courses = await Course.find(condition, {
     status: 0,
@@ -152,5 +153,25 @@ export const searchCourses = async ({ perPage, currentPage, condition }) => {
   };
 };
 
+// ======== For user  ========
 // Register course by user
 export const registerCourse = async (idCourse, idUser) => {};
+
+// ======== For admin  ========
+// get list detail information about course => Done
+export const getListCoursesByAdmin = async (condition) => {
+  const courses = await Course.find(condition).populate("createdBy", "username avatar");
+  return courses;
+};
+
+// Approve courses => Done
+export const approveCourses = async (listIdCourses) => {
+  const res = await Course.updateMany(
+    {
+      _id: { $in: listIdCourses },
+    },
+    {
+      status: "approved",
+    }
+  );
+};
