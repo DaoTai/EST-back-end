@@ -113,14 +113,14 @@ export const restoreCourse = async (idCourse) => {
 
 // Destroy: Allow owner or admin => Done
 // Xoá course + lessons
-export const destroyCourse = async (idCourse, idUser, roles) => {
+export const destroyCourse = async (idCourse, idUser) => {
   const course = await Course.findOne({
     _id: idCourse,
     deleted: true,
   });
   if (course) {
     const isOwner = String(course.createdBy) === idUser;
-    if (roles.includes("admin") || isOwner) {
+    if (isOwner) {
       const deletedCouse = await Course.findOneAndDelete({
         _id: idCourse,
       });
@@ -161,6 +161,7 @@ export const registerCourse = async (idCourse, idUser) => {};
 // get list detail information about course => Done
 export const getListCoursesByAdmin = async ({ condition, currentPage, perPage }) => {
   const courses = await Course.find(condition)
+    .populate("lessons", "name reports")
     .populate("createdBy", "username avatar")
     .skip(perPage * currentPage - perPage)
     .limit(perPage);
@@ -180,7 +181,7 @@ export const approveCourses = async (listIdCourses) => {
   );
 };
 
-// UnApprove course
+// UnApprove course => Done
 export const toggleApproveCourse = async (idCourse) => {
   const course = await Course.findById(idCourse);
   await Course.updateOne(
@@ -191,4 +192,19 @@ export const toggleApproveCourse = async (idCourse) => {
       status: course.status === "pending" ? "approved" : "pending",
     }
   );
+};
+
+// Destroy course by admin => Done
+export const destroyCourseByAdmin = async (idCourse) => {
+  const deletedCouse = await Course.findOneAndDelete({
+    _id: idCourse,
+  });
+  // Delete: thumbnail + roadmap + lessons
+  await Promise.all([
+    deletedCouse.deleteThumbnail(),
+    deletedCouse.deleteRoadmap(),
+    Lesson.deleteMany({
+      _id: { $in: deletedCouse.lessons },
+    }),
+  ]);
 };

@@ -83,7 +83,7 @@ class CourseController {
   // [DELETE] courses/:id/destroy
   async destroy(req, res, next) {
     try {
-      await destroyCourse(req.params.id, req.user._id, req.user.roles);
+      await destroyCourse(req.params.id, req.user._id);
       return res.sendStatus(204);
     } catch (error) {
       next(error);

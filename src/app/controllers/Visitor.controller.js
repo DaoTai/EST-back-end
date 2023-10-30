@@ -11,7 +11,7 @@ class VisitorController {
 
       // Only approved courses
       const condition = {
-        // status: "approved",
+        status: "approved",
       };
       if (name) condition.name = new RegExp(name, "i");
       if (category) condition.category = new RegExp(category, "i");

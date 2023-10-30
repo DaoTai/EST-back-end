@@ -20,8 +20,8 @@ const route = (app) => {
   // Chưa xử lý quyền truy cập:
   // - User đã đăng ký
   // - Teacher có quyền CUD lesson + Questions
-  app.use("/lessons", verifyTokenMiddleware, lessonRoute);
-  app.use("/questions", verifyTokenMiddleware, questionRoute);
+  app.use("/lessons", [verifyTokenMiddleware, verifyTeacherMiddleware], lessonRoute);
+  app.use("/questions", [verifyTokenMiddleware, verifyTeacherMiddleware], questionRoute);
 };
 
 export default route;
