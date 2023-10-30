@@ -159,19 +159,36 @@ export const registerCourse = async (idCourse, idUser) => {};
 
 // ======== For admin  ========
 // get list detail information about course => Done
-export const getListCoursesByAdmin = async (condition) => {
-  const courses = await Course.find(condition).populate("createdBy", "username avatar");
-  return courses;
+export const getListCoursesByAdmin = async ({ condition, currentPage, perPage }) => {
+  const courses = await Course.find(condition)
+    .populate("createdBy", "username avatar")
+    .skip(perPage * currentPage - perPage)
+    .limit(perPage);
+  const total = await Course.count(condition);
+  return { courses, maxPage: Math.round(total / perPage), total };
 };
 
 // Approve courses => Done
 export const approveCourses = async (listIdCourses) => {
-  const res = await Course.updateMany(
+  await Course.updateMany(
     {
       _id: { $in: listIdCourses },
     },
     {
       status: "approved",
+    }
+  );
+};
+
+// UnApprove course
+export const toggleApproveCourse = async (idCourse) => {
+  const course = await Course.findById(idCourse);
+  await Course.updateOne(
+    {
+      _id: idCourse,
+    },
+    {
+      status: course.status === "pending" ? "approved" : "pending",
     }
   );
 };
