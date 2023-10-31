@@ -8,5 +8,9 @@ router.patch("/profile", uploadImage.single("avatar"), UserController.editProfil
 router.get("/profile/:id", UserController.getProfile);
 router.patch("/change-password", UserController.changePassword);
 router.get("/courses", UserController.getOwnerCourses);
-router.post("/courses/:id", UserController.registerCourse);
+router
+  .route("/courses/:id")
+  .post(UserController.registerCourse)
+  .patch(UserController.rateCourse)
+  .delete(UserController.cancelCourse);
 export default router;

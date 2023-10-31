@@ -1,4 +1,9 @@
-import { getRegisteredCourses, registerCourse } from "~/services/Course.service";
+import {
+  cancelCourse,
+  getRegisteredCourses,
+  rateCourse,
+  registerCourse,
+} from "~/services/Course.service";
 import User from "../models/User.model";
 class UserController {
   // [GET] user/profile
@@ -116,6 +121,32 @@ class UserController {
       if (!idCourse) return res.status(400).json("Id course is required");
       const data = await registerCourse(idUser, idCourse);
       return res.status(201).json(data);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // [PATCH] user/courses/:id
+  async rateCourse(req, res, next) {
+    try {
+      const { rating } = req.body;
+      const idCourse = req.params.id;
+      const idUser = req.user._id;
+      await rateCourse(idUser, idCourse, rating);
+      return res.sendStatus(201);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // [DELETE] user/courses/:id
+  async cancelCourse(req, res, next) {
+    try {
+      const idCourse = req.params.id;
+      const idUser = req.user._id;
+      if (!idCourse) return res.status(400).json("Id course is required");
+      await cancelCourse(idUser, idCourse);
+      return res.sendStatus(204);
     } catch (error) {
       next(error);
     }

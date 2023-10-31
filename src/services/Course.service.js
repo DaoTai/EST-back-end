@@ -162,6 +162,7 @@ export const registerCourse = async (idUser, idCourse) => {
   const course = await Course.findById(idCourse);
   const isExistedMember = course.members.includes(idUser);
 
+  // TH: đã là thành viên của course
   if (isExistedMember) {
     throw new ApiError({
       message: "User was existed member",
@@ -195,12 +196,46 @@ export const registerCourse = async (idUser, idCourse) => {
   return savedRegister;
 };
 
+// Cancel course by user => Done
+export const cancelCourse = async (idUser, idCourse) => {
+  const deletedRegister = RegisterCourse.deleteOne({
+    user: idUser,
+    course: idCourse,
+  });
+  const cancelCourse = Course.updateOne(
+    {
+      _id: idCourse,
+    },
+    {
+      $pull: {
+        members: idUser,
+      },
+    }
+  );
+
+  await Promise.all([deletedRegister, cancelCourse]);
+};
+
 // Get registered courses => Done
 export const getRegisteredCourses = async (idUser) => {
   const listCourse = await RegisterCourse.find({
     user: idUser,
   }).populate("course", "name thumbnail slug");
   return listCourse;
+};
+
+// Rate course => Done
+export const rateCourse = async (idUser, idCourse, rate) => {
+  if (isNaN(+rate)) throw new ApiError({ statusCode: 400, message: "Invalid rate" });
+  await RegisterCourse.updateOne(
+    {
+      user: idUser,
+      course: idCourse,
+    },
+    {
+      rating: +rate,
+    }
+  );
 };
 
 // ======== For admin  ========
