@@ -1,5 +1,7 @@
 import Course from "~/app/models/Course.model";
 import Lesson from "~/app/models/Lesson.model";
+import RegisterCourse from "~/app/models/RegisterCourse.model";
+import ApiError from "~/utils/ApiError";
 import slugify from "~/utils/slugify";
 
 // ======== For teacher  ========
@@ -154,8 +156,52 @@ export const searchCourses = async ({ perPage, currentPage, condition }) => {
 };
 
 // ======== For user  ========
-// Register course by user
-export const registerCourse = async (idCourse, idUser) => {};
+// Register course by user => Done
+export const registerCourse = async (idUser, idCourse) => {
+  const now = new Date();
+  const course = await Course.findById(idCourse);
+  const isExistedMember = course.members.includes(idUser);
+
+  if (isExistedMember) {
+    throw new ApiError({
+      message: "User was existed member",
+      statusCode: 403,
+    });
+  }
+
+  // TH: course là private + hết hạn đăng ký thì huỷ
+  if (course.type === "private" && now.getTime() > course.closeDate.getTime()) {
+    throw new ApiError({
+      message: "Register time has expired",
+      statusCode: 403,
+    });
+  }
+
+  const register = new RegisterCourse({
+    user: idUser,
+    course: idCourse,
+  });
+  const savedRegister = await register.save();
+  await Course.updateOne(
+    {
+      _id: idCourse,
+    },
+    {
+      $push: {
+        members: idUser,
+      },
+    }
+  );
+  return savedRegister;
+};
+
+// Get registered courses => Done
+export const getRegisteredCourses = async (idUser) => {
+  const listCourse = await RegisterCourse.find({
+    user: idUser,
+  }).populate("course", "name thumbnail slug");
+  return listCourse;
+};
 
 // ======== For admin  ========
 // get list detail information about course => Done

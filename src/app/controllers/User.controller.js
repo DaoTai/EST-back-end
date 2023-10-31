@@ -1,3 +1,4 @@
+import { getRegisteredCourses, registerCourse } from "~/services/Course.service";
 import User from "../models/User.model";
 class UserController {
   // [GET] user/profile
@@ -92,6 +93,29 @@ class UserController {
       const editedUser = await User.findByIdAndUpdate(req.user._id, data, { new: true });
 
       return res.status(200).json(editedUser.toProfileJSON());
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // [GET] user/courses
+  async getOwnerCourses(req, res, next) {
+    try {
+      const listCourses = await getRegisteredCourses(req.user._id);
+      return res.status(200).json(listCourses);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // [POST] user/courses/:id
+  async registerCourse(req, res, next) {
+    try {
+      const idCourse = req.params.id;
+      const idUser = req.user._id;
+      if (!idCourse) return res.status(400).json("Id course is required");
+      const data = await registerCourse(idUser, idCourse);
+      return res.status(201).json(data);
     } catch (error) {
       next(error);
     }

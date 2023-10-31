@@ -35,6 +35,7 @@ class AuthController {
 
       // Nếu user đăng ký theo app (có password)
       if (password && !provider) {
+        // Kiểm tra user đã tồn tại?
         const isExisted = await user.isExistByPassword(email);
         if (isExisted) {
           return res.status(401).json("User is existed. Please using other emails");
