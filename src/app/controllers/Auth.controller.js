@@ -56,27 +56,38 @@ class AuthController {
   async signIn(req, res, next) {
     try {
       const { email, password, provider } = req.body;
-      if (!email) return res.status(401).json("Email is required field");
-      const userLogin = new User({
-        email,
-      });
-      const user = await User.findOne({
-        email,
-        provider,
-      });
+      if (!email) return res.status(400).json("Email is required field");
 
-      // If user not exist
-      if (!user) return res.status(401).json("User is not exist");
+      if ((!password && !provider) || (password && provider))
+        return res.status(400).json("Sign in invalid");
 
-      const payload = user.toAuthJSON();
-      // Kiểm tra user đăng nhập theo tài khoản đã đăng ký theo app (có password)
-      if (!provider && password && user.hashedPassword) {
+      // Đăng nhập bởi Next-Auth
+      if (provider) {
+        const user = await User.findOne({
+          email,
+          provider,
+        });
+        if (!user) return res.status(401).json("User is not exist");
+        return res.status(200).json(user.toAuthJSON());
+      } else {
+        // Đăng nhập theo tài khoản đã đăng ký theo app (có password)
+        const userLogin = new User({
+          email,
+        });
+
+        const user = await User.findOne({
+          email,
+          hashedPassword: {
+            $exists: true,
+          },
+        });
+
+        if (!user) return res.status(401).json("User is not exist");
         const isValidPwd = userLogin.isValidPassword(password, user.hashedPassword);
         return isValidPwd
-          ? res.status(200).json(payload)
+          ? res.status(200).json(user.toAuthJSON())
           : res.status(401).json("Password is wrong");
       }
-      return res.status(200).json(payload);
     } catch (err) {
       next(err);
     }

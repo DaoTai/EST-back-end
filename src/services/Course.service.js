@@ -155,6 +155,43 @@ export const searchCourses = async ({ perPage, currentPage, condition }) => {
   };
 };
 
+// Get detail course
+export const getDetailCourse = async (slug) => {
+  const course = await Course.findOne(
+    { slug: slug, status: "approved" },
+    {
+      roadmap: 0,
+      status: 0,
+    }
+  )
+    .populate("lessons", "-questions -comments")
+    .populate({
+      path: "createdBy",
+      select: "-hashedPassword -email -provider",
+    });
+
+  // Lấy ra TB cộng rating từ RegisterCourse (các khoá học đã có người học)
+  const avgRates = await RegisterCourse.aggregate([
+    {
+      $match: {
+        course: course._id,
+        rating: { $exists: true }, // only get register course has rate
+      },
+    },
+    {
+      $group: {
+        _id: course._id,
+        averageRating: {
+          $avg: "$rating", // tính trung bình cộng của field rating
+        },
+        totalRating: { $sum: 1 }, // mỗi document sẽ cộng dồn tổng 1
+      },
+    },
+  ]);
+
+  return { ...course.toObject(), ...avgRates[0] };
+};
+
 // ======== For user  ========
 // Register course by user => Done
 export const registerCourse = async (idUser, idCourse) => {
@@ -220,14 +257,14 @@ export const cancelCourse = async (idUser, idCourse) => {
 export const getRegisteredCourses = async (idUser) => {
   const listCourse = await RegisterCourse.find({
     user: idUser,
-  }).populate("course", "name thumbnail slug");
+  }).populate("course", "name thumbnail slug type");
   return listCourse;
 };
 
 // Rate course => Done
 export const rateCourse = async (idUser, idCourse, rate) => {
   if (isNaN(+rate)) throw new ApiError({ statusCode: 400, message: "Invalid rate" });
-  await RegisterCourse.updateOne(
+  const res = await RegisterCourse.updateOne(
     {
       user: idUser,
       course: idCourse,
@@ -236,7 +273,16 @@ export const rateCourse = async (idUser, idCourse, rate) => {
       rating: +rate,
     }
   );
+  if (res.matchedCount === 0) {
+    throw new ApiError({
+      statusCode: 401,
+      message: "Rating failed. You must be registered course",
+    });
+  }
 };
+
+// Get registered course
+export const getRegisteredCourse = async (idUser) => {};
 
 // ======== For admin  ========
 // get list detail information about course => Done

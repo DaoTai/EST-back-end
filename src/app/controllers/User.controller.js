@@ -113,6 +113,11 @@ class UserController {
     }
   }
 
+  async getOwnerCourse(req, rest, next) {
+    try {
+    } catch (error) {}
+  }
+
   // [POST] user/courses/:id
   async registerCourse(req, res, next) {
     try {

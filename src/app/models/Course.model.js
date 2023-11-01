@@ -63,8 +63,14 @@ const CourseSchema = new mongoose.Schema(
         return slugify(this.name);
       },
     },
-    members: [{ type: mongoose.Types.ObjectId, ref: "user" }],
-    lessons: [{ type: mongoose.Types.ObjectId, ref: "lesson" }],
+    members: {
+      type: [{ type: mongoose.Types.ObjectId, ref: "user" }],
+      default: [],
+    },
+    lessons: {
+      type: [{ type: mongoose.Types.ObjectId, ref: "lesson" }],
+      default: [],
+    },
 
     openDate: Date,
     closeDate: Date,
@@ -90,6 +96,8 @@ const CourseSchema = new mongoose.Schema(
           intro: this.intro,
           type: this.type,
           members: this.members,
+          lessons: this.lessons,
+          slug: this.slug,
           openDate: this.openDate,
           closeDate: this.closeDate,
           createdBy: this.createdBy,
@@ -102,8 +110,6 @@ const CourseSchema = new mongoose.Schema(
         return {
           ...this.getPreview(),
           status: this.status,
-          slug: this.slug,
-          lessons: this.lessons,
           createdAt: this.createdAt,
           updatedAt: this.updatedAt,
           deleted: this.deleted,

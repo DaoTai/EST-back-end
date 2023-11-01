@@ -1,11 +1,11 @@
-import { searchCourses } from "~/services/Course.service";
+import { getDetailCourse, searchCourses } from "~/services/Course.service";
 import Course from "../models/Course.model";
 
 class VisitorController {
   // [GET] search/courses
   async searchCourse(req, res, next) {
     try {
-      const { page, name, category } = req.query;
+      const { page, name, category, level, type } = req.query;
       const perPage = 2;
       const currentPage = +page || 1;
 
@@ -13,6 +13,8 @@ class VisitorController {
       const condition = {
         status: "approved",
       };
+      if (level) condition.level = level;
+      if (type) condition.type = type;
       if (name) condition.name = new RegExp(name, "i");
       if (category) condition.category = new RegExp(category, "i");
 
@@ -32,11 +34,8 @@ class VisitorController {
   async getCourse(req, res, next) {
     try {
       const slug = req.params.slug;
-      const course = await Course.findOne({
-        slug: slug,
-        status: "approved",
-      });
-      return res.status(200).json(course ? course.getPreview() : course);
+      const course = await getDetailCourse(slug);
+      return res.status(200).json(course);
     } catch (error) {
       next(error);
     }
