@@ -141,15 +141,34 @@ export const destroyCourse = async (idCourse, idUser) => {
 // ======== For visitor  ========
 // Search courses by visitor => Done
 export const searchCourses = async ({ perPage, currentPage, condition }) => {
+  const totalCourses = await Course.count(condition);
   const courses = await Course.find(condition, {
     status: 0,
   })
     .populate("createdBy", "username avatar")
     .skip(currentPage * perPage - perPage)
     .limit(perPage);
-  const totalCourses = await Course.count(condition);
+
+  const listCourses = [];
+  for (const course of courses) {
+    const rating = await RegisterCourse.aggregate([])
+      .match({
+        course: course._id,
+        rating: { $exists: true },
+      })
+      .group({
+        _id: course._id,
+        averageRating: { $avg: "$rating" },
+        totalRating: { $sum: 1 },
+      });
+    listCourses.push({
+      ...course.getPreview(),
+      ...rating[0],
+    });
+  }
+
   return {
-    courses: courses.map((course) => course.getPreview()),
+    courses: listCourses,
     maxPage: Math.ceil(totalCourses / perPage),
     total: totalCourses,
   };
@@ -282,7 +301,18 @@ export const rateCourse = async (idUser, idCourse, rate) => {
 };
 
 // Get registered course
-export const getRegisteredCourse = async (idUser) => {};
+export const getRegisteredCourse = async (idRegisteredCourse) => {
+  const registeredCourse = await RegisterCourse.findById(idRegisteredCourse).populate("course");
+  const course = await Course.findById(registeredCourse.course._id).populate(
+    "createdBy",
+    "username avatar"
+  );
+
+  return {
+    ...registeredCourse.toObject(),
+    teacher: course.createdBy,
+  };
+};
 
 // ======== For admin  ========
 // get list detail information about course => Done

@@ -10,6 +10,7 @@ router.patch("/change-password", UserController.changePassword);
 router.get("/courses", UserController.getOwnerCourses);
 router
   .route("/courses/:id")
+  .get(UserController.getOwnerCourse)
   .post(UserController.registerCourse)
   .patch(UserController.rateCourse)
   .delete(UserController.cancelCourse);

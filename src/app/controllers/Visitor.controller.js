@@ -1,5 +1,4 @@
 import { getDetailCourse, searchCourses } from "~/services/Course.service";
-import Course from "../models/Course.model";
 
 class VisitorController {
   // [GET] search/courses

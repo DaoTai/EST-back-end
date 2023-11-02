@@ -1,5 +1,6 @@
 import {
   cancelCourse,
+  getRegisteredCourse,
   getRegisteredCourses,
   rateCourse,
   registerCourse,
@@ -113,9 +114,15 @@ class UserController {
     }
   }
 
-  async getOwnerCourse(req, rest, next) {
+  // [GET] user/courses/:id
+
+  async getOwnerCourse(req, res, next) {
     try {
-    } catch (error) {}
+      const data = await getRegisteredCourse(req.params.id);
+      return res.status(200).json(data);
+    } catch (error) {
+      next(error);
+    }
   }
 
   // [POST] user/courses/:id
