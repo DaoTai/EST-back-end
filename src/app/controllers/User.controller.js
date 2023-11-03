@@ -6,6 +6,7 @@ import {
   registerCourse,
 } from "~/services/Course.service";
 import User from "../models/User.model";
+import { getDetailLesson, getRegisteredLessons } from "~/services/Lesson.service";
 class UserController {
   // [GET] user/profile
   async searchProfile(req, res, next) {
@@ -115,7 +116,6 @@ class UserController {
   }
 
   // [GET] user/courses/:id
-
   async getOwnerCourse(req, res, next) {
     try {
       const data = await getRegisteredCourse(req.params.id);
@@ -142,6 +142,7 @@ class UserController {
   async rateCourse(req, res, next) {
     try {
       const { rating } = req.body;
+      if (!rating) return res.status(400).json("Rating value is required");
       const idCourse = req.params.id;
       const idUser = req.user._id;
       await rateCourse(idUser, idCourse, rating);
@@ -159,6 +160,30 @@ class UserController {
       if (!idCourse) return res.status(400).json("Id course is required");
       await cancelCourse(idUser, idCourse);
       return res.sendStatus(204);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // [GET] user/lessons
+  async getLessons(req, res, next) {
+    try {
+      const idCourse = req.query.idRegisteredCourse;
+
+      if (!idCourse) return res.status(400).json("No have id course");
+      const lessons = await getRegisteredLessons(idCourse);
+      return res.status(200).json(lessons);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // [GET] user/lessons/:id
+  async getLesson(req, res, next) {
+    try {
+      const idLesson = req.params.id;
+      const lesson = await getDetailLesson(idLesson);
+      return res.status(200).json(lesson);
     } catch (error) {
       next(error);
     }

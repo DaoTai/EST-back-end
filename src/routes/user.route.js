@@ -14,4 +14,7 @@ router
   .post(UserController.registerCourse)
   .patch(UserController.rateCourse)
   .delete(UserController.cancelCourse);
+
+router.get("/lessons", UserController.getLessons);
+router.get("/lessons/:id", UserController.getLesson);
 export default router;

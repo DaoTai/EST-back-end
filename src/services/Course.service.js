@@ -283,6 +283,7 @@ export const getRegisteredCourses = async (idUser) => {
 // Rate course => Done
 export const rateCourse = async (idUser, idCourse, rate) => {
   if (isNaN(+rate)) throw new ApiError({ statusCode: 400, message: "Invalid rate" });
+
   const res = await RegisterCourse.updateOne(
     {
       user: idUser,
@@ -292,6 +293,7 @@ export const rateCourse = async (idUser, idCourse, rate) => {
       rating: +rate,
     }
   );
+
   if (res.matchedCount === 0) {
     throw new ApiError({
       statusCode: 401,

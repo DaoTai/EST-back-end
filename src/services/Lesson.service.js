@@ -1,6 +1,9 @@
 import Lesson from "~/app/models/Lesson.model";
 import Course from "~/app/models/Course.model";
 import slugify from "~/utils/slugify";
+import RegisterCourse from "~/app/models/RegisterCourse.model";
+import mongoose from "mongoose";
+import ApiError from "~/utils/ApiError";
 
 // Get list lessons by id course
 export const getLessonsByIdCourse = async ({ idCourse, currentPage, perPage }) => {
@@ -98,11 +101,38 @@ export const deleteLesson = async (idLesson) => {
   return deletedLesson;
 };
 
-// Get by slug lesson
-export const getLessonBySlug = async (slug, idUser) => {
-  if (!slug || !idUser) return null;
+// ===== Registered course for user
+// Get list lessons: passed + next lessons
+export const getRegisteredLessons = async (idRegisteredCourse) => {
+  const registeredCourse = await RegisterCourse.findById(idRegisteredCourse).populate(
+    "passedLessons"
+  );
+  if (!registeredCourse) return null;
+  const course = await Course.findOne(
+    {
+      _id: registeredCourse.course,
+      lessons: {
+        $nin: registeredCourse.passedLessons,
+      },
+    },
+    {
+      lessons: 1,
+    }
+  ).populate("lessons", "_id name");
 
+  if (!course) return course;
+
+  return {
+    passedLessons: registeredCourse.passedLessons,
+    nextLessons: course.lessons,
+  };
+};
+
+// Get detail lesson
+export const getDetailLesson = async (idLesson) => {
   const lesson = await Lesson.findOne({
-    slug: slug,
-  });
+    _id: idLesson,
+    isLaunching: true,
+  }).populate("questions", "-correctAnswers");
+  return lesson ? lesson.getInfor() : lesson;
 };

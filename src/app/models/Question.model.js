@@ -22,7 +22,7 @@ const QuestionSchema = new mongoose.Schema(
       {
         type: String,
         trim: true,
-        minLength: [1, "Answer is not allowed to empty"],
+        minLength: [2, "Answers are at least 2 answers"],
       },
     ],
     correctAnswers: [
