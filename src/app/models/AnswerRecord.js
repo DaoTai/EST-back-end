@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const QuestionUserSchema = new mongoose.Schema(
+const AnswerRecordSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Types.ObjectId,
@@ -10,20 +10,25 @@ const QuestionUserSchema = new mongoose.Schema(
       type: mongoose.Types.ObjectId,
       ref: "question",
     },
+    answers: {
+      type: [String],
+      require: [true, "User's answers are required"],
+      trim: true,
+    },
     score: {
       type: Number,
+      min: 0,
       max: 10,
     },
     comment: {
       type: String,
       trim: true,
     },
-    answers: [String],
   },
   {
     timestamps: true,
   }
 );
 
-const QuestionUserModel = mongoose.model("question-user", QuestionUserSchema);
-export default QuestionUserModel;
+const AnswerRecordModel = mongoose.model("answer-record", AnswerRecordSchema);
+export default AnswerRecordModel;

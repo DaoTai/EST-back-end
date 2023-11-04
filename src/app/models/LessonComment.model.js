@@ -6,6 +6,10 @@ const LessonCommentSchema = new mongoose.Schema(
       type: mongoose.Types.ObjectId,
       ref: "user",
     },
+    lesson: {
+      type: mongoose.Types.ObjectId,
+      ref: "lesson",
+    },
     content: {
       type: String,
       trim: true,

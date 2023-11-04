@@ -6,7 +6,12 @@ import {
   registerCourse,
 } from "~/services/Course.service";
 import User from "../models/User.model";
-import { getDetailLesson, getRegisteredLessons } from "~/services/Lesson.service";
+import {
+  getDetailLesson,
+  getRegisteredLessons,
+  getUserAnswersByIdLesson,
+} from "~/services/Lesson.service";
+import { answerQuestion } from "~/services/Question.service";
 class UserController {
   // [GET] user/profile
   async searchProfile(req, res, next) {
@@ -183,7 +188,24 @@ class UserController {
     try {
       const idLesson = req.params.id;
       const lesson = await getDetailLesson(idLesson);
-      return res.status(200).json(lesson);
+      const listAnswerRecords = await getUserAnswersByIdLesson(req.user._id, idLesson);
+
+      return res.status(200).json({ lesson, listAnswerRecords });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // [POST] user/questions/:id
+  async answerQuestion(req, res, next) {
+    try {
+      const { id } = req.params;
+      const { userAnswers } = req.body;
+      if (!id) return res.status(400).json("Id question is required");
+      if (!userAnswers) return res.status(400).json("Not empty user's answers");
+
+      const record = await answerQuestion({ idQuestion: id, idUser: req.user._id, userAnswers });
+      return res.status(201).json(record);
     } catch (error) {
       next(error);
     }

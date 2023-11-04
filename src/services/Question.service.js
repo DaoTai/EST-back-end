@@ -1,6 +1,8 @@
 import Lesson from "~/app/models/Lesson.model";
 import Question from "~/app/models/Question.model";
+import QuestionUser from "~/app/models/AnswerRecord";
 
+// =======Teacher=======
 // Create question
 export const createQuestion = async (body) => {
   const question = new Question(body);
@@ -77,4 +79,38 @@ export const deleteQuestion = async (idQuestion) => {
   );
 
   await Promise.all([deleteQuestion, deleteQuestionInLesson]);
+};
+
+// =======User=======
+// Answer question
+export const answerQuestion = async ({ idQuestion, idUser, userAnswers }) => {
+  const totalUserAnswers = userAnswers.length;
+  const record = new QuestionUser({
+    user: idUser,
+    question: idQuestion,
+    answers: userAnswers,
+  });
+
+  const question = await Question.findById(idQuestion);
+  if (question.category === "code") {
+    return await record.save();
+  } else {
+    const correctAnswers = question.correctAnswers;
+    const totalCorrectAnswers = correctAnswers.length;
+    let totalCorrectAnswerOfUser = 0;
+    correctAnswers.forEach((correct) => {
+      if (Array.isArray(userAnswers) && userAnswers.includes(correct)) {
+        totalCorrectAnswerOfUser += 1;
+      }
+    });
+
+    // Nếu category của question là multiple-choice mà user chọn nhiều hơn
+    // số đáp án đúng thì score = 0
+    // Chọn ít hơn thì được tính điểm
+    record.score =
+      totalUserAnswers > totalCorrectAnswers
+        ? 0
+        : (totalCorrectAnswerOfUser / totalCorrectAnswers) * 10;
+    return await record.save();
+  }
 };

@@ -4,6 +4,7 @@ import slugify from "~/utils/slugify";
 import RegisterCourse from "~/app/models/RegisterCourse.model";
 import mongoose from "mongoose";
 import ApiError from "~/utils/ApiError";
+import RecordAnswer from "~/app/models/AnswerRecord";
 
 // Get list lessons by id course
 export const getLessonsByIdCourse = async ({ idCourse, currentPage, perPage }) => {
@@ -62,8 +63,10 @@ export const editLesson = async (idLesson, data, file) => {
     name: data.name,
     isLaunching: data.isLaunching,
     theory: data.theory,
-    references: data.references,
+    references: data?.references,
   };
+
+  console.log(values);
 
   const lesson = await Lesson.findById(idLesson);
   if (!lesson) return null;
@@ -133,6 +136,18 @@ export const getDetailLesson = async (idLesson) => {
   const lesson = await Lesson.findOne({
     _id: idLesson,
     isLaunching: true,
-  }).populate("questions", "-correctAnswers");
+  }).populate("questions", "-correctAnswers -explaination");
   return lesson ? lesson.getInfor() : lesson;
+};
+
+export const getUserAnswersByIdLesson = async (idUser, idLesson) => {
+  const lesson = await Lesson.findById(idLesson);
+  const listRecords = await RecordAnswer.find({
+    question: {
+      $in: lesson.questions,
+    },
+    user: idUser,
+  }).populate("question");
+
+  return listRecords;
 };

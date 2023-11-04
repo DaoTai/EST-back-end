@@ -5,7 +5,7 @@ import slugify from "~/utils/slugify";
 
 const ReportSchema = new mongoose.Schema(
   {
-    sender: {
+    user: {
       type: mongoose.Types.ObjectId,
       ref: "user",
     },
@@ -50,21 +50,18 @@ const LessonSchema = new mongoose.Schema(
         message: "Theory must be string",
       },
     },
-    references: [
-      {
-        type: String,
-        minLength: [5, "Reference link is least 5 characters"],
-      },
-    ],
+    references: {
+      type: [
+        {
+          type: String,
+          minLength: [5, "Reference link is least 5 characters"],
+        },
+      ],
+      default: [],
+    },
     video: {
       type: AttachmentSchema,
     },
-    comments: [
-      {
-        type: mongoose.Types.ObjectId,
-        ref: "lesson-comment",
-      },
-    ],
     questions: [
       {
         type: mongoose.Types.ObjectId,
@@ -90,7 +87,6 @@ const LessonSchema = new mongoose.Schema(
           isLaunching: this.isLaunching,
           theory: this.theory,
           references: this.references,
-          comments: this.comments,
           questions: this.questions,
           reports: this.reports,
           video: transformAttachmentUri(this.video, "video"),
