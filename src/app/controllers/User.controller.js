@@ -5,13 +5,13 @@ import {
   rateCourse,
   registerCourse,
 } from "~/services/Course.service";
-import User from "../models/User.model";
 import {
-  getDetailLesson,
+  getDetailLessonToLearn,
   getRegisteredLessons,
   getUserAnswersByIdLesson,
 } from "~/services/Lesson.service";
 import { answerQuestion } from "~/services/Question.service";
+import User from "../models/User.model";
 class UserController {
   // [GET] user/profile
   async searchProfile(req, res, next) {
@@ -174,7 +174,6 @@ class UserController {
   async getLessons(req, res, next) {
     try {
       const idCourse = req.query.idRegisteredCourse;
-
       if (!idCourse) return res.status(400).json("No have id course");
       const lessons = await getRegisteredLessons(idCourse);
       return res.status(200).json(lessons);
@@ -187,7 +186,7 @@ class UserController {
   async getLesson(req, res, next) {
     try {
       const idLesson = req.params.id;
-      const lesson = await getDetailLesson(idLesson);
+      const lesson = await getDetailLessonToLearn(idLesson, req.user._id);
       const listAnswerRecords = await getUserAnswersByIdLesson(req.user._id, idLesson);
 
       return res.status(200).json({ lesson, listAnswerRecords });
@@ -202,7 +201,8 @@ class UserController {
       const { id } = req.params;
       const { userAnswers } = req.body;
       if (!id) return res.status(400).json("Id question is required");
-      if (!userAnswers) return res.status(400).json("Not empty user's answers");
+      if (!userAnswers || userAnswers.length === 0)
+        return res.status(400).json("Not empty user's answers");
 
       const record = await answerQuestion({ idQuestion: id, idUser: req.user._id, userAnswers });
       return res.status(201).json(record);

@@ -62,12 +62,15 @@ const LessonSchema = new mongoose.Schema(
     video: {
       type: AttachmentSchema,
     },
-    questions: [
-      {
-        type: mongoose.Types.ObjectId,
-        ref: "question",
-      },
-    ],
+    questions: {
+      type: [
+        {
+          type: mongoose.Types.ObjectId,
+          ref: "question",
+        },
+      ],
+      default: [],
+    },
     reports: [
       {
         type: ReportSchema,

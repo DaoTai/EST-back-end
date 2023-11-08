@@ -1,3 +1,4 @@
+import AnswerRecord from "~/app/models/AnswerRecord.model";
 import Course from "~/app/models/Course.model";
 import Lesson from "~/app/models/Lesson.model";
 import RegisterCourse from "~/app/models/RegisterCourse.model";
@@ -54,11 +55,13 @@ export const editCourse = async (data, idCourse, idUser, files = []) => {
     createdBy: idUser,
   });
 
+  // Cập nhật slug khi thay đổi tên
   if (data.name && oldCourse.name !== data.name) {
     data.slug = slugify(data.name);
   }
 
   const course = new Course();
+  // Xoá thumbnail & roadmap cũ (nếu có)
   if (thumbnail) {
     const [resDelete, resThumbnail] = await Promise.all([
       oldCourse.deleteThumbnail(),
@@ -72,18 +75,39 @@ export const editCourse = async (data, idCourse, idUser, files = []) => {
     data.roadmap = course.createRoadmap(roadmap[0]);
   }
 
-  const editedCourse = await Course.findOneAndUpdate(
-    {
-      _id: idCourse,
-      createdBy: idUser,
-    },
-    data,
-    {
-      new: true,
-    }
-  );
+  // Thay đổi private -> public: xoá openDate & closeDate
+  if (data.type === "public" && oldCourse.type === "private") {
+    const editedCourse = await Course.findOneAndUpdate(
+      {
+        _id: idCourse,
+        createdBy: idUser,
+      },
+      {
+        ...data,
+        $unset: {
+          openDate: 1,
+          closeDate: 1,
+        },
+      },
+      {
+        new: true,
+      }
+    );
+    return editedCourse;
+  } else {
+    const editedCourse = await Course.findOneAndUpdate(
+      {
+        _id: idCourse,
+        createdBy: idUser,
+      },
+      data,
+      {
+        new: true,
+      }
+    );
 
-  return editedCourse;
+    return editedCourse;
+  }
 };
 
 // Soft delete => Done
@@ -276,7 +300,7 @@ export const cancelCourse = async (idUser, idCourse) => {
 export const getRegisteredCourses = async (idUser) => {
   const listCourse = await RegisterCourse.find({
     user: idUser,
-  }).populate("course", "name thumbnail slug type");
+  }).populate("course", "name thumbnail slug type lessons ");
   return listCourse;
 };
 
@@ -305,6 +329,9 @@ export const rateCourse = async (idUser, idCourse, rate) => {
 // Get registered course
 export const getRegisteredCourse = async (idRegisteredCourse) => {
   const registeredCourse = await RegisterCourse.findById(idRegisteredCourse).populate("course");
+
+  if (!registeredCourse) return null;
+
   const course = await Course.findById(registeredCourse.course._id).populate(
     "createdBy",
     "username avatar"

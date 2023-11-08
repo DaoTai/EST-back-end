@@ -1,10 +1,8 @@
-import Lesson from "~/app/models/Lesson.model";
+import AnswerRecord from "~/app/models/AnswerRecord.model";
 import Course from "~/app/models/Course.model";
-import slugify from "~/utils/slugify";
+import Lesson from "~/app/models/Lesson.model";
 import RegisterCourse from "~/app/models/RegisterCourse.model";
-import mongoose from "mongoose";
-import ApiError from "~/utils/ApiError";
-import RecordAnswer from "~/app/models/AnswerRecord";
+import slugify from "~/utils/slugify";
 
 // Get list lessons by id course
 export const getLessonsByIdCourse = async ({ idCourse, currentPage, perPage }) => {
@@ -66,8 +64,6 @@ export const editLesson = async (idLesson, data, file) => {
     references: data?.references,
   };
 
-  console.log(values);
-
   const lesson = await Lesson.findById(idLesson);
   if (!lesson) return null;
 
@@ -108,41 +104,66 @@ export const deleteLesson = async (idLesson) => {
 // Get list lessons: passed + next lessons
 export const getRegisteredLessons = async (idRegisteredCourse) => {
   const registeredCourse = await RegisterCourse.findById(idRegisteredCourse).populate(
-    "passedLessons"
+    "passedLessons",
+    "_id name"
   );
   if (!registeredCourse) return null;
+  const listIdsPassedLessons = registeredCourse.passedLessons.map((lesson) => String(lesson._id));
   const course = await Course.findOne(
     {
       _id: registeredCourse.course,
-      lessons: {
-        $nin: registeredCourse.passedLessons,
-      },
     },
     {
       lessons: 1,
     }
   ).populate("lessons", "_id name");
-
-  if (!course) return course;
+  const nextLessons = course?.lessons.filter(
+    (lesson) => !listIdsPassedLessons.includes(String(lesson._id))
+  );
 
   return {
     passedLessons: registeredCourse.passedLessons,
-    nextLessons: course.lessons,
+    nextLessons,
   };
 };
 
-// Get detail lesson
-export const getDetailLesson = async (idLesson) => {
+// Get detail lesson to learn
+export const getDetailLessonToLearn = async (idLesson, idUser) => {
   const lesson = await Lesson.findOne({
     _id: idLesson,
     isLaunching: true,
   }).populate("questions", "-correctAnswers -explaination");
-  return lesson ? lesson.getInfor() : lesson;
+
+  if (lesson) {
+    // Kiểm tra lesson đã pass chưa
+    const isPassed = await RegisterCourse.findOne({
+      user: idUser,
+      passedLessons: {
+        $elemMatch: { $eq: lesson._id },
+      },
+    });
+    // Lesson chưa pass và không có câu hỏi nào thì passs
+    if (!isPassed && lesson.questions.length === 0) {
+      await RegisterCourse.updateOne(
+        {
+          user: idUser,
+          course: lesson.course,
+        },
+        {
+          $push: {
+            passedLessons: lesson._id,
+          },
+        }
+      );
+    }
+    return lesson.getInfor();
+  }
+  return lesson;
 };
 
 export const getUserAnswersByIdLesson = async (idUser, idLesson) => {
   const lesson = await Lesson.findById(idLesson);
-  const listRecords = await RecordAnswer.find({
+  const listRecords = await AnswerRecord.find({
     question: {
       $in: lesson.questions,
     },
@@ -150,4 +171,46 @@ export const getUserAnswersByIdLesson = async (idUser, idLesson) => {
   }).populate("question");
 
   return listRecords;
+};
+
+// Pass lesson registered course
+export const passLesson = async ({ idLesson, idUser }) => {
+  const lesson = await Lesson.findById(idLesson);
+  if (!lesson) return;
+  if (lesson.questions && lesson.questions.length === 0) {
+    await RegisterCourse.updateOne(
+      {
+        user: idUser,
+        course: lesson.course,
+      },
+      {
+        $push: {
+          passedLessons: lesson._id,
+        },
+      }
+    );
+    return;
+  } else {
+    // Tổng số câu hỏi đã trả lời trong bài học
+    const totalAnsweredRecords = await AnswerRecord.count({
+      user: idUser,
+      question: {
+        $in: lesson.questions,
+      },
+    });
+    // Nếu đã trả lời hết câu hỏi
+    if (lesson.questions.length === totalAnsweredRecords) {
+      await RegisterCourse.updateOne(
+        {
+          user: idUser,
+          course: lesson.course,
+        },
+        {
+          $push: {
+            passedLessons: lesson._id,
+          },
+        }
+      );
+    }
+  }
 };
