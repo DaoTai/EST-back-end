@@ -6,9 +6,15 @@ import {
   registerCourse,
 } from "~/services/Course.service";
 import {
+  createComment,
+  deleteComment,
+  deleteReport,
+  editComment,
+  getComments,
   getDetailLessonToLearn,
   getRegisteredLessons,
   getUserAnswersByIdLesson,
+  reportLesson,
 } from "~/services/Lesson.service";
 import { answerQuestion } from "~/services/Question.service";
 import User from "../models/User.model";
@@ -190,6 +196,97 @@ class UserController {
       const listAnswerRecords = await getUserAnswersByIdLesson(req.user._id, idLesson);
 
       return res.status(200).json({ lesson, listAnswerRecords });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // [POST] user/lessons/:id/reports
+  async reportLesson(req, res, next) {
+    try {
+      const idUser = req.user._id;
+      const idLesson = req.params.id;
+      if (!idLesson) return res.status(400).json("Id lesson is required");
+      const { content } = req.body;
+      if (!content) {
+        return res.status(400).json("Content report is required");
+      }
+      const reports = await reportLesson({ idLesson, idUser, content });
+      return res.status(201).json(reports);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // [DELETE] user/lessons/:id/reports/:idReport
+  async deleteReportLesson(req, res, next) {
+    try {
+      const idLesson = req.params.id;
+      const idReport = req.params.idReport;
+      if (!idLesson) return res.status(400).json("Id lesson is required");
+
+      if (!idReport) return res.status(400).json("Id report is required");
+      await deleteReport({ idLesson, idReport });
+      return res.sendStatus(204);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // [GET] user/lessons/:id/comments
+  async getCommentsLesson(req, res, next) {
+    try {
+      const idLesson = req.params.id;
+      if (!idLesson) return res.status(400).json("Id lesson is required");
+      const page = +req.query.page || 1;
+      const perPage = 10;
+      const result = await getComments({
+        idLesson,
+        page,
+        perPage,
+      });
+      return res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // [POST] user/lessons/:id/comments
+  async commentLesson(req, res, next) {
+    try {
+      const idUser = req.user._id;
+      const idLesson = req.params.id;
+      const { content } = req.body;
+      if (!idLesson) return res.status(400).json("Id lesson is required");
+      if (!content) return res.status(400).json("Content comment is required");
+      const comment = await createComment({ idUser, idLesson, content });
+      return res.status(201).json(comment);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // [PATCH] user/lessons/:id/comments/:idComment
+  async editCommentLesson(req, res, next) {
+    try {
+      const idComment = req.params.idComment;
+      const { content, pin } = req.body;
+      if (!idComment) return res.status(400).json("Id comment lesson is required");
+      if (!content) return res.status(400).json("Content comment is required");
+      const editedComment = await editComment({ idComment, content, pin });
+      return res.status(200).json(editedComment);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // [DELETE] user/lessons/:id/comments/:idComment
+  async deleteCommentLesson(req, res, next) {
+    try {
+      const idComment = req.params.idComment;
+      if (!idComment) return res.status(400).json("Id comment lesson is required");
+      await deleteComment(idComment);
+      return res.sendStatus(204);
     } catch (error) {
       next(error);
     }

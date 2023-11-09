@@ -1,6 +1,7 @@
 import AnswerRecord from "~/app/models/AnswerRecord.model";
 import Course from "~/app/models/Course.model";
 import Lesson from "~/app/models/Lesson.model";
+import LessonComment from "~/app/models/LessonComment.model";
 import RegisterCourse from "~/app/models/RegisterCourse.model";
 import slugify from "~/utils/slugify";
 
@@ -161,6 +162,7 @@ export const getDetailLessonToLearn = async (idLesson, idUser) => {
   return lesson;
 };
 
+// Get answer of user by id lesson
 export const getUserAnswersByIdLesson = async (idUser, idLesson) => {
   const lesson = await Lesson.findById(idLesson);
   const listRecords = await AnswerRecord.find({
@@ -213,4 +215,89 @@ export const passLesson = async ({ idLesson, idUser }) => {
       );
     }
   }
+};
+
+// ===========Report==========
+// Report lesson registered course
+export const reportLesson = async ({ idLesson, idUser, content }) => {
+  const lesson = await Lesson.findByIdAndUpdate(
+    idLesson,
+    {
+      $push: {
+        reports: { user: idUser, content },
+      },
+    },
+    {
+      new: true,
+    }
+  );
+  return lesson.reports;
+};
+
+// Delete report
+export const deleteReport = async ({ idReport, idLesson }) => {
+  await Lesson.updateOne(
+    {
+      _id: idLesson,
+    },
+    {
+      $pull: {
+        reports: {
+          _id: idReport,
+        },
+      },
+    }
+  );
+};
+
+// =========Comment==========
+// Get comments by id lesson
+export const getComments = async ({ idLesson, page, perPage }) => {
+  const countComments = LessonComment.count({ lesson: idLesson });
+
+  const findComments = LessonComment.find({
+    lesson: idLesson,
+  })
+    .populate("user", "avatar username")
+    .skip(perPage * page - perPage)
+    .limit(perPage);
+
+  const [listComments, totalComments] = await Promise.all([findComments, countComments]);
+
+  return {
+    listComments,
+    maxPage: Math.ceil(totalComments / perPage),
+    total: totalComments,
+  };
+};
+
+// Create comment lesson
+export const createComment = async ({ idLesson, idUser, content }) => {
+  const newComment = new LessonComment({
+    lesson: idLesson,
+    user: idUser,
+    content,
+  });
+  const savedComment = newComment.save();
+  return savedComment;
+};
+
+// Edit comment lesson
+export const editComment = async ({ idComment, content, pin }) => {
+  const editedComment = await LessonComment.findByIdAndUpdate(
+    idComment,
+    {
+      content,
+      pin: !!pin,
+    },
+    {
+      new: true,
+    }
+  );
+  return editedComment;
+};
+
+// Delete comment lesson
+export const deleteComment = async (idComment) => {
+  await LessonComment.deleteOne({ _id: idComment });
 };

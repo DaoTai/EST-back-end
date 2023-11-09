@@ -16,6 +16,19 @@ router
   .delete(UserController.cancelCourse);
 
 router.get("/lessons", UserController.getLessons);
+// Reports
+router.post("/lessons/:id/reports", UserController.reportLesson);
+router.delete("/lessons/:id/reports/:idReport", UserController.deleteReportLesson);
+// Comments
+router
+  .route("/lessons/:id/comments")
+  .get(UserController.getCommentsLesson)
+  .post(UserController.commentLesson);
+router
+  .route("/lessons/:id/comments/:idComment")
+  .patch(UserController.editCommentLesson)
+  .delete(UserController.deleteCommentLesson);
+
 router.get("/lessons/:id", UserController.getLesson);
 router.post("/questions/:id", UserController.answerQuestion);
 

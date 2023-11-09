@@ -9,10 +9,10 @@ const ReportSchema = new mongoose.Schema(
       type: mongoose.Types.ObjectId,
       ref: "user",
     },
-    message: {
+    content: {
       type: String,
-      required: [true, "Message report is required"],
-      minLength: [5, "Message report is at least 5 character"],
+      required: [true, "Content report is required"],
+      minLength: [5, "Content report is at least 5 character"],
     },
   },
   {
