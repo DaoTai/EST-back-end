@@ -55,10 +55,19 @@ class UserController {
   // [GET] user/profile/:id
   async getProfile(req, res, next) {
     try {
-      const user = await User.findById(req.params.id, {
+      const findUser = User.findById(req.params.id, {
         hashedPassword: 0,
       });
-      return res.status(200).json(user ? user.toProfileJSON() : user);
+      const findOwnerCourses = getRegisteredCourses(req.params.id);
+      const [user, listCourses] = await Promise.all([findUser, findOwnerCourses]);
+      return res.status(200).json(
+        user
+          ? {
+              profile: user.toProfileJSON(),
+              listCourses,
+            }
+          : user
+      );
     } catch (error) {
       next(error);
     }
@@ -296,12 +305,18 @@ class UserController {
   async answerQuestion(req, res, next) {
     try {
       const { id } = req.params;
-      const { userAnswers } = req.body;
+      const { userAnswers, idRegisteredCourse } = req.body;
       if (!id) return res.status(400).json("Id question is required");
+      if (!idRegisteredCourse) return res.status(400).json("Id registered course is required");
       if (!userAnswers || userAnswers.length === 0)
         return res.status(400).json("Not empty user's answers");
 
-      const record = await answerQuestion({ idQuestion: id, idUser: req.user._id, userAnswers });
+      const record = await answerQuestion({
+        idRegisteredCourse,
+        idQuestion: id,
+        idUser: req.user._id,
+        userAnswers,
+      });
       return res.status(201).json(record);
     } catch (error) {
       next(error);

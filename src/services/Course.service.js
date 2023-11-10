@@ -278,11 +278,20 @@ export const registerCourse = async (idUser, idCourse) => {
 
 // Cancel course by user => Done
 export const cancelCourse = async (idUser, idCourse) => {
-  const deletedRegister = RegisterCourse.deleteOne({
+  // delete register course
+  const deletedRegisteredCourse = await RegisterCourse.findOneAndDelete({
     user: idUser,
     course: idCourse,
   });
-  const cancelCourse = Course.updateOne(
+
+  const idRegisteredCourse = deletedRegisteredCourse._id;
+  const deleteAnswerRecords = AnswerRecord.deleteMany({
+    user: idUser,
+    idRegisteredCourse: idRegisteredCourse,
+  });
+
+  // update member for course
+  const exitMember = await Course.updateOne(
     {
       _id: idCourse,
     },
@@ -293,14 +302,14 @@ export const cancelCourse = async (idUser, idCourse) => {
     }
   );
 
-  await Promise.all([deletedRegister, cancelCourse]);
+  await Promise.all([deleteAnswerRecords, exitMember]);
 };
 
 // Get registered courses => Done
 export const getRegisteredCourses = async (idUser) => {
   const listCourse = await RegisterCourse.find({
     user: idUser,
-  }).populate("course", "name thumbnail slug type lessons ");
+  }).populate("course", "name thumbnail slug type lessons category");
   return listCourse;
 };
 

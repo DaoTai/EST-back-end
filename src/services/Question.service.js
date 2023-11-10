@@ -85,13 +85,14 @@ export const deleteQuestion = async (idQuestion) => {
 
 // =======User=======
 // Answer question
-export const answerQuestion = async ({ idQuestion, idUser, userAnswers }) => {
+export const answerQuestion = async ({ idQuestion, idUser, userAnswers, idRegisteredCourse }) => {
   const totalUserAnswers = userAnswers.length;
   const question = await Question.findById(idQuestion);
   if (!question) return null;
   const answerRecord = await AnswerRecord.findOne({
     question: idQuestion,
     user: idUser,
+    idRegisteredCourse: idRegisteredCourse,
   });
 
   if (answerRecord) {
@@ -100,6 +101,7 @@ export const answerQuestion = async ({ idQuestion, idUser, userAnswers }) => {
     const record = new AnswerRecord({
       user: idUser,
       question: idQuestion,
+      idRegisteredCourse: idRegisteredCourse,
       answers: userAnswers,
     });
     let newRecord;

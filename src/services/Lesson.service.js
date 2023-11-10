@@ -254,14 +254,13 @@ export const deleteReport = async ({ idReport, idLesson }) => {
 // Get comments by id lesson
 export const getComments = async ({ idLesson, page, perPage }) => {
   const countComments = LessonComment.count({ lesson: idLesson });
-
   const findComments = LessonComment.find({
     lesson: idLesson,
   })
     .populate("user", "avatar username")
     .skip(perPage * page - perPage)
-    .limit(perPage);
-
+    .limit(perPage)
+    .sort({ createdAt: -1 });
   const [listComments, totalComments] = await Promise.all([findComments, countComments]);
 
   return {
@@ -278,7 +277,7 @@ export const createComment = async ({ idLesson, idUser, content }) => {
     user: idUser,
     content,
   });
-  const savedComment = newComment.save();
+  const savedComment = (await newComment.save()).populate("user", "avatar username");
   return savedComment;
 };
 

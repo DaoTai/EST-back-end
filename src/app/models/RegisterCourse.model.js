@@ -22,7 +22,6 @@ const RegisterCourseSchema = new mongoose.Schema(
         {
           type: mongoose.Types.ObjectId,
           ref: "lesson",
-          unique: true,
         },
       ],
       default: [],

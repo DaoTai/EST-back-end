@@ -5,10 +5,17 @@ const AnswerRecordSchema = new mongoose.Schema(
     user: {
       type: mongoose.Types.ObjectId,
       ref: "user",
+      required: [true, "Required user"],
     },
     question: {
       type: mongoose.Types.ObjectId,
       ref: "question",
+      required: [true, "Required question"],
+    },
+    idRegisteredCourse: {
+      // Xử lý gọn khi cancel course
+      type: String,
+      required: [true, "Required idRegisterCourse"],
     },
     answers: {
       type: [String],
