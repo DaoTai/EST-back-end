@@ -15,10 +15,6 @@ const LessonCommentSchema = new mongoose.Schema(
       trim: true,
       required: [true, "Comment is not empty"],
     },
-    pin: {
-      type: Boolean,
-      default: false,
-    },
   },
   {
     timestamps: true,
