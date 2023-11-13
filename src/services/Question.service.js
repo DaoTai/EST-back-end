@@ -15,6 +15,13 @@ export const createQuestion = async (body) => {
 // Create question by idLesson => Done
 export const createQuestionByIdLesson = async (idLesson, body) => {
   const question = new Question(body);
+  const lesson = await Lesson.findById(idLesson, { course: 1 }).populate("course", "type");
+  if (lesson.course.type === "public" && question.category === "code") {
+    throw new ApiError({
+      statusCode: 403,
+      message: "Public course cannot create code question",
+    });
+  }
   const newQuestion = await question.save();
   await Lesson.updateOne(
     {
@@ -95,6 +102,7 @@ export const answerQuestion = async ({ idQuestion, idUser, userAnswers, idRegist
     idRegisteredCourse: idRegisteredCourse,
   });
 
+  // Nếu đã có câu trả lời trước đó rồi thì cập nhật lại (question code, hiện tại có thể redo cả trắc nghiệm)
   if (answerRecord) {
     return await changeAnswerQuestion(answerRecord._id, userAnswers);
   } else {

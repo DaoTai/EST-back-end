@@ -23,7 +23,7 @@ class LessonController {
     }
   }
 
-  // [GET] /lessons//user/:idCourse
+  // [GET] /lessons/user/:idCourse
   async getBySlug(req, res, next) {
     try {
     } catch (error) {

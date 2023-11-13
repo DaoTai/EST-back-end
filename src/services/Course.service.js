@@ -25,12 +25,18 @@ export const getTrashedCourses = async (idUser) => {
   return courses;
 };
 
-// Get by id => Done
-export const getCourseById = async (idCourse, idUser) => {
+// Get owner by id => Done
+export const getOwnerCourseById = async (idCourse, idUser) => {
   const course = await Course.findOne({
     _id: idCourse,
     createdBy: idUser,
   });
+  return course;
+};
+
+// Get by id
+export const getCourseById = async (idCourse) => {
+  const course = await Course.findById(idCourse);
   return course;
 };
 

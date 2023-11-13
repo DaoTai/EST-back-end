@@ -2,12 +2,14 @@ import {
   createCourse,
   destroyCourse,
   editCourse,
-  getCourseById,
+  getOwnerCourseById,
   restoreCourse,
   getOwnerCourses,
   softDeleteCourse,
   getTrashedCourses,
+  getCourseById,
 } from "~/services/Course.service";
+import path from "path";
 class CourseController {
   // Only my courses
   // [GET] courses
@@ -43,7 +45,7 @@ class CourseController {
   // [GET] courses/:id
   async get(req, res, next) {
     try {
-      const course = await getCourseById(req.params.id, req.user._id);
+      const course = await getOwnerCourseById(req.params.id, req.user._id);
       return res.status(200).json(course ? course.getInfor() : course);
     } catch (error) {
       next(error);

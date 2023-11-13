@@ -10,9 +10,16 @@ export const getLessonsByIdCourse = async ({ idCourse, currentPage, perPage }) =
   const total = await Lesson.count({
     course: idCourse,
   });
-  const listLessons = await Lesson.find({
-    course: idCourse,
-  })
+  const listLessons = await Lesson.find(
+    {
+      course: idCourse,
+    },
+    {
+      reports: 1,
+      isLaunching: 1,
+      name: 1,
+    }
+  )
     .skip(perPage * currentPage - perPage)
     .limit(perPage);
   return { listLessons, maxPage: Math.ceil(total / perPage) };
@@ -117,10 +124,12 @@ export const getRegisteredLessons = async (idRegisteredCourse) => {
     {
       lessons: 1,
     }
-  ).populate("lessons", "_id name");
-  const nextLessons = course?.lessons.filter(
-    (lesson) => !listIdsPassedLessons.includes(String(lesson._id))
-  );
+  ).populate("lessons", "_id name isLaunching");
+
+  // Lấy ra các lesson đã bật mode launch và chưa học
+  const nextLessons = course?.lessons.filter((lesson) => {
+    return lesson.isLaunching && !listIdsPassedLessons.includes(String(lesson._id));
+  });
 
   return {
     passedLessons: registeredCourse.passedLessons,
