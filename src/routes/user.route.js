@@ -30,6 +30,7 @@ router
   .delete(UserController.deleteCommentLesson);
 
 router.get("/lessons/:id", UserController.getLesson);
+router.get("/questions/self-train", UserController.selfTrainQuestions);
 router.post("/questions/:id", UserController.answerQuestion);
 
 export default router;

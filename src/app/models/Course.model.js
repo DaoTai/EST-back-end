@@ -71,6 +71,10 @@ const CourseSchema = new mongoose.Schema(
       type: [{ type: mongoose.Types.ObjectId, ref: "lesson" }],
       default: [],
     },
+    programmingLanguages: {
+      type: [String],
+      default: [],
+    },
 
     openDate: Date,
     closeDate: Date,
@@ -101,6 +105,7 @@ const CourseSchema = new mongoose.Schema(
           openDate: this.openDate,
           closeDate: this.closeDate,
           createdBy: this.createdBy,
+          programmingLanguages: this.programmingLanguages,
           thumbnail: transformAttachmentUri(this.thumbnail, "image"),
         };
       },

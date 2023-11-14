@@ -3,6 +3,9 @@ import Question from "~/app/models/Question.model";
 import AnswerRecord from "~/app/models/AnswerRecord.model";
 import ApiError from "~/utils/ApiError";
 import { passLesson } from "./Lesson.service";
+import User from "~/app/models/User.model";
+import Course from "~/app/models/Course.model";
+import RegisterCourse from "~/app/models/RegisterCourse.model";
 
 // =======Teacher=======
 // Create question
@@ -160,4 +163,103 @@ export const changeAnswerQuestion = async (idAnswerRecord, newAnswers) => {
   } else {
     throw new ApiError({ statusCode: 401, message: "Only category is code that can be updated" });
   }
+};
+
+// Training with Do choice / multiple-choice questions
+// Tạo ra các bài tập trắc nghiệm dựa vào
+// - Các ngôn ngữ lập trình của các khoá học đã đăng ký => Tìm các câu hỏi lquan tương ứng với các khoá cùng keyword
+// - Các ngôn ngữ lập trình yêu thích của cá nhân
+export const getCustomizeQuestions = async ({ type, idUser }) => {
+  const checkTypes = ["byFavouriteProgrammingLanguages", "byCourseCategories"];
+
+  if (!checkTypes.includes(type)) {
+    throw new ApiError({ statusCode: 400, message: "Type to train is invalid" });
+  }
+
+  // Chứa danh sách các id lesson
+  let idLessons = [];
+
+  if (type === "byFavouriteProgrammingLanguages") {
+    const user = await User.findById(idUser);
+
+    // Lấy ra các course có ngôn ngữ lập trình phù hợp với user
+    const listCourses = await Course.find(
+      {
+        programmingLanguages: {
+          $in: user.favouriteProrammingLanguages,
+        },
+      },
+      {
+        lessons: 1,
+      }
+    );
+
+    // Lấy tổng hợp các id lesson với từng course
+    idLessons = listCourses.reduce((acc, course) => [...acc, ...course.lessons], []);
+
+    // Cách 1:
+    // const listLessons = await Lesson.find(
+    //   {
+    //     _id: {
+    //       $in: idLessons,
+    //     },
+    //   },
+    //   {
+    //     questions: 1,
+    //   }
+    // );
+    // const listIdLessons = listLessons.reduce((acc, lesson) => [...acc, ...lesson.questions], []);
+    // const listQuestions = await Question.find({
+    //   _id: {
+    //     $in: listIdLessons,
+    //   },
+    //   category: {
+    //     $nin: ["code"],
+    //   },
+    // });
+  }
+
+  if (type === "byCourseCategories") {
+    // Lấy ra các khoá học đã đăng ký
+    const listRegisterCourses = await RegisterCourse.find({
+      user: idUser,
+    }).populate("course");
+
+    // Lấy ra các category (ko trùng lặp) của các course
+    const uniqueCategories = new Set(
+      listRegisterCourses.reduce(
+        (acc, registerCourse) => [...acc, registerCourse.course.category],
+        []
+      )
+    );
+
+    // Lấy ra các khoá học có categories tương ứng
+    const listCourses = await Course.find({
+      category: {
+        $in: Array.from(uniqueCategories),
+      },
+    });
+    idLessons = listCourses.reduce((acc, course) => [...acc, ...course.lessons], []);
+  }
+
+  const listLessons = await Lesson.aggregate([])
+    .match({
+      _id: {
+        $in: idLessons,
+      },
+    })
+    .lookup({
+      from: "questions",
+      as: "questions",
+      localField: "questions",
+      foreignField: "_id",
+    })
+    .unwind("questions"); // vì questions là 1 mảng nên có thể tách từng question thành 1 document riêng có cùng _id là id lesson, nếu mảng trống thì bỏ qua
+
+  // Lấy ra các questions trong từ khoá học => Lấy ra các question dạng trắc nghiệm
+  const listQuestions = listLessons
+    .map((lesson) => lesson.questions)
+    .filter((question) => question.category !== "code");
+
+  return listQuestions;
 };
