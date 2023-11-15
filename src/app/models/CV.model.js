@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import AttachmentSchema from "~/utils/attachment/Schema";
 
 const CVSchema = new mongoose.Schema(
   {
@@ -7,17 +6,16 @@ const CVSchema = new mongoose.Schema(
       type: mongoose.Types.ObjectId,
       ref: "user",
       required: true,
-      unique: true,
     },
     role: {
       type: String,
       required: [true, "Request role is required"],
     },
-    text: {
+    content: {
       type: String,
-      default: "",
+      trim: true,
+      required: [true, "Content about CV is required"],
     },
-    attachment: AttachmentSchema,
   },
   {
     timestamps: true,
