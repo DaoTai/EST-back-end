@@ -111,9 +111,9 @@ export const deleteLesson = async (idLesson) => {
 // ===== Registered course for user
 
 // Check user in registered course
-export const isRegistered = async ({ idUser, idRegisteredCourse }) => {
+export const isRegistered = async ({ idUser, idRegisterCourse }) => {
   const course = await RegisterCourse.findOne({
-    _id: idRegisteredCourse,
+    _id: idRegisterCourse,
     user: idUser,
   });
   return !!course;
