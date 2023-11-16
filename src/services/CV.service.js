@@ -32,10 +32,21 @@ export const deleteCV = async (id) => {
 };
 
 // Get list CV
-export const getListCVs = async (role) => {
-  return await CV.find({
+export const getListCVs = async ({ role = "teacher", perPage, page }) => {
+  const total = await CV.count({
     role: role,
-  }).populate("user", "-hashedPassword");
+  });
+  const listCvs = await CV.find({
+    role: role,
+  })
+    .populate("user", "-hashedPassword")
+    .skip(perPage * page - perPage)
+    .limit(perPage);
+  return {
+    listCvs,
+    total,
+    maxPage: Math.ceil(total / perPage),
+  };
 };
 
 // Get detail
@@ -47,5 +58,14 @@ export const getDetail = async (id) => {
 export const getDetailByUser = async (idUser) => {
   return await CV.findOne({
     user: idUser,
+  });
+};
+
+// Delete list Cv
+export const deleteListCV = async (listIds) => {
+  await CV.deleteMany({
+    _id: {
+      $in: listIds,
+    },
   });
 };

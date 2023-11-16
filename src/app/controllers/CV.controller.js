@@ -8,16 +8,6 @@ import {
 } from "~/services/CV.service";
 
 class CVController {
-  // [GET] /cv?role=""
-  async getList(req, res, next) {
-    try {
-      const role = req.query.role || "teacher";
-      const listCvs = await getListCVs(role);
-      return res.status(200).json(listCvs);
-    } catch (error) {
-      next(error);
-    }
-  }
   // [POST] /cv
   async create(req, res, next) {
     try {

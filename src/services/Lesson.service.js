@@ -109,12 +109,22 @@ export const deleteLesson = async (idLesson) => {
 };
 
 // ===== Registered course for user
+
+// Check user in registered course
+export const isRegistered = async ({ idUser, idRegisteredCourse }) => {
+  const course = await RegisterCourse.findOne({
+    _id: idRegisteredCourse,
+    user: idUser,
+  });
+  return !!course;
+};
+
 // Get list lessons: passed + next lessons
-export const getRegisteredLessons = async (idRegisteredCourse) => {
-  const registeredCourse = await RegisterCourse.findById(idRegisteredCourse).populate(
-    "passedLessons",
-    "_id name"
-  );
+export const getRegisteredLessons = async ({ idRegisteredCourse, idUser }) => {
+  const registeredCourse = await RegisterCourse.findOne({
+    _id: idRegisteredCourse,
+    user: idUser,
+  }).populate("passedLessons", "_id name");
   if (!registeredCourse) return null;
   const listIdsPassedLessons = registeredCourse.passedLessons.map((lesson) => String(lesson._id));
   const course = await Course.findOne(

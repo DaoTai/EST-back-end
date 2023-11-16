@@ -66,6 +66,7 @@ class AuthController {
         const user = await User.findOne({
           email,
           provider,
+          deleted: false,
         });
         if (!user) return res.status(401).json("User is not exist");
         return res.status(200).json(user.toAuthJSON());
@@ -77,6 +78,7 @@ class AuthController {
 
         const user = await User.findOne({
           email,
+          deleted: false,
           hashedPassword: {
             $exists: true,
           },

@@ -342,8 +342,11 @@ export const rateCourse = async (idUser, idCourse, rate) => {
 };
 
 // Get registered course
-export const getRegisteredCourse = async (idRegisteredCourse) => {
-  const registeredCourse = await RegisterCourse.findById(idRegisteredCourse).populate("course");
+export const getRegisteredCourse = async ({ idRegisteredCourse, idUser }) => {
+  const registeredCourse = await RegisterCourse.findOne({
+    _id: idRegisteredCourse,
+    user: idUser,
+  }).populate("course");
 
   if (!registeredCourse) return null;
 

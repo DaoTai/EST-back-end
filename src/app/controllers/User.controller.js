@@ -14,6 +14,7 @@ import {
   getDetailLessonToLearn,
   getRegisteredLessons,
   getUserAnswersByIdLesson,
+  isRegistered,
   reportLesson,
 } from "~/services/Lesson.service";
 import { answerQuestion, getCustomizeQuestions } from "~/services/Question.service";
@@ -55,9 +56,7 @@ class UserController {
   // [GET] user/profile/:id
   async getProfile(req, res, next) {
     try {
-      const findUser = User.findById(req.params.id, {
-        hashedPassword: 0,
-      });
+      const findUser = User.findById(req.params.id);
       const findOwnerCourses = getRegisteredCourses(req.params.id);
       const [user, listCourses] = await Promise.all([findUser, findOwnerCourses]);
       return res.status(200).json(
@@ -138,7 +137,10 @@ class UserController {
   // [GET] user/courses/:id
   async getOwnerCourse(req, res, next) {
     try {
-      const data = await getRegisteredCourse(req.params.id);
+      const data = await getRegisteredCourse({
+        idRegisteredCourse: req.params.id,
+        idUser: req.user._id,
+      });
       return res.status(200).json(data);
     } catch (error) {
       next(error);
@@ -190,7 +192,10 @@ class UserController {
     try {
       const idCourse = req.query.idRegisteredCourse;
       if (!idCourse) return res.status(400).json("No have id course");
-      const lessons = await getRegisteredLessons(idCourse);
+      const lessons = await getRegisteredLessons({
+        idRegisteredCourse: idCourse,
+        idUser: req.user._id,
+      });
       return res.status(200).json(lessons);
     } catch (error) {
       next(error);
@@ -201,8 +206,17 @@ class UserController {
   async getLesson(req, res, next) {
     try {
       const idLesson = req.params.id;
-      const lesson = await getDetailLessonToLearn(idLesson, req.user._id);
-      const listAnswerRecords = await getUserAnswersByIdLesson(req.user._id, idLesson);
+      const idRegisterCourse = req.query.idRegisterCourse;
+      const idUser = req.user._id;
+      if (!idRegisterCourse || !idLesson)
+        return res.status(400).json("Id course and id lesson are required");
+      // Kiểm tra user có trong khoá học đăng ký ko
+      const isPermit = await isRegistered({ idRegisterCourse, idUser });
+      if (!isPermit) {
+        return res.status(403).json("You did not registered this course");
+      }
+      const lesson = await getDetailLessonToLearn(idLesson, idUser);
+      const listAnswerRecords = await getUserAnswersByIdLesson(idUser, idLesson);
 
       return res.status(200).json({ lesson, listAnswerRecords });
     } catch (error) {
