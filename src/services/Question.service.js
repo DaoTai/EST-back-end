@@ -242,6 +242,7 @@ export const getCustomizeQuestions = async ({ type, idUser }) => {
     idLessons = listCourses.reduce((acc, course) => [...acc, ...course.lessons], []);
   }
 
+  // Lấy ra các lesson có questions dạng trắc nghiệm (category !== code)
   const listLessons = await Lesson.aggregate([])
     .match({
       _id: {
@@ -254,12 +255,16 @@ export const getCustomizeQuestions = async ({ type, idUser }) => {
       localField: "questions",
       foreignField: "_id",
     })
-    .unwind("questions"); // vì questions là 1 mảng nên có thể tách từng question thành 1 document riêng có cùng _id là id lesson, nếu mảng trống thì bỏ qua
+    .match({
+      "questions.category": {
+        $ne: "code",
+      },
+    })
+    .unwind("questions");
 
-  // Lấy ra các questions trong từ khoá học => Lấy ra các question dạng trắc nghiệm
-  const listQuestions = listLessons
-    .map((lesson) => lesson.questions)
-    .filter((question) => question.category !== "code");
+  // vì questions là 1 mảng nên có thể tách từng question thành 1 document riêng có cùng _id là id lesson, nếu mảng trống thì bỏ qua
+
+  const listQuestions = listLessons.map((lesson) => lesson.questions);
 
   return listQuestions;
 };
