@@ -6,6 +6,7 @@ import lessonRoute from "./lesson.route";
 import visitorRoute from "./visitor.route";
 import questionRoute from "./question.route";
 import cvRoute from "./cv.route";
+import answerRecordRoute from "./answer-record.route";
 import {
   verifyTokenMiddleware,
   verifyTeacherMiddleware,
@@ -19,8 +20,8 @@ const route = (app) => {
   app.use("/user", verifyTokenMiddleware, userRoute);
   app.use("/admin", [verifyTokenMiddleware, verifyAdminMiddleware], adminRoute);
   app.use("/courses", [verifyTokenMiddleware, verifyTeacherMiddleware], courseRoute);
-  // Chưa xử lý quyền truy cập:
-  // - User đã đăng ký khoá học thì mới có quyền truy cập lesson của khoá học đó
+  app.use("/answer-records", [verifyTokenMiddleware, verifyTeacherMiddleware], answerRecordRoute);
+
   app.use("/lessons", [verifyTokenMiddleware, verifyTeacherMiddleware], lessonRoute);
   app.use("/questions", [verifyTokenMiddleware, verifyTeacherMiddleware], questionRoute);
 };

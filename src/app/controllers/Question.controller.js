@@ -4,6 +4,7 @@ import {
   getQuestionById,
   getQuestionsByIdLesson,
   editQuestion,
+  getListAnswerRecordByIdQuestion,
 } from "~/services/Question.service";
 
 class QuestionController {

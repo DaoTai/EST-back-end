@@ -29,6 +29,15 @@ export const getListUsers = async ({ perPage, role = "user", page, status }) => 
   };
 };
 
+export const getAllUserWithRole = async ({ role = "user", status }) => {
+  return await User.find({
+    roles: {
+      $in: [role],
+    },
+    deleted: status === "deleted" ? true : false,
+  });
+};
+
 export const authorizeTeacher = async (option = "authorize", listIdUsers) => {
   const options = ["authorize", "unAuthorize"];
   if (!options.includes(option)) {

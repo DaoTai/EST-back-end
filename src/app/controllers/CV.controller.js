@@ -1,11 +1,4 @@
-import {
-  createCV,
-  deleteCV,
-  editCV,
-  getDetail,
-  getDetailByUser,
-  getListCVs,
-} from "~/services/CV.service";
+import { createCV, deleteCV, editCV, getDetail, getDetailByUser } from "~/services/CV.service";
 
 class CVController {
   // [POST] /cv

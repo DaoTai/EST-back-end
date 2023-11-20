@@ -93,6 +93,25 @@ export const deleteQuestion = async (idQuestion) => {
   await Promise.all([deleteQuestion, deleteQuestionInLesson]);
 };
 
+// Get answer record by ID lesson
+export const getListAnswerRecordByIdQuestion = async (idQuestion) => {
+  const answerRecords = await AnswerRecord.find({
+    question: idQuestion,
+  }).populate("user", "username");
+  return answerRecords;
+};
+
+// Handle give score code question for member
+export const giveScoreCodeQuestion = async ({ idAnswerRecord, score, comment }) => {
+  await AnswerRecord.updateOne(
+    { _id: idAnswerRecord },
+    {
+      score: score,
+      comment: comment,
+    }
+  );
+};
+
 // =======User=======
 // Answer question
 export const answerQuestion = async ({ idQuestion, idUser, userAnswers, idRegisteredCourse }) => {

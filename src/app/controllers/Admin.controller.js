@@ -5,7 +5,12 @@ import {
   getListCoursesByAdmin,
   toggleApproveCourse,
 } from "~/services/Course.service";
-import { authorizeAccounts, authorizeTeacher, getListUsers } from "~/services/User.service";
+import {
+  authorizeAccounts,
+  authorizeTeacher,
+  getAllUserWithRole,
+  getListUsers,
+} from "~/services/User.service";
 
 class AdminController {
   // [GET] /admin/courses
@@ -71,9 +76,14 @@ class AdminController {
     try {
       const perPage = 20;
       const page = +req.query.page || 1;
-      const { role, status } = req.query;
-      const result = await getListUsers({ perPage, page, role, status });
-      return res.status(200).json(result);
+      const { role, status, getAll } = req.query;
+      if (getAll) {
+        const listUsers = await getAllUserWithRole({ role, status });
+        return res.status(200).json(listUsers);
+      } else {
+        const result = await getListUsers({ perPage, page, role, status });
+        return res.status(200).json(result);
+      }
     } catch (error) {
       next(error);
     }
