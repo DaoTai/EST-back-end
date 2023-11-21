@@ -2,9 +2,9 @@ import mongoose from "mongoose";
 
 const GroupChatSchema = new mongoose.Schema(
   {
-    status: {
+    name: {
       type: String,
-      default: "pending",
+      required: [true, "Name is required"],
     },
     host: {
       type: mongoose.Types.ObjectId,
@@ -12,6 +12,10 @@ const GroupChatSchema = new mongoose.Schema(
       required: [true, "Host is required"],
     },
     members: {
+      type: [{ type: mongoose.Types.ObjectId, ref: "user" }],
+      default: [],
+    },
+    blockedMembers: {
       type: [{ type: mongoose.Types.ObjectId, ref: "user" }],
       default: [],
     },
@@ -24,5 +28,11 @@ const GroupChatSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+GroupChatSchema.pre("updateOne", function (next) {
+  this.options.runValidators = true;
+  next();
+});
+
 const GroupChatModel = mongoose.model("group-chat", GroupChatSchema);
 export default GroupChatModel;
