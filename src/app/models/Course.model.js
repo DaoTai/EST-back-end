@@ -144,7 +144,6 @@ const CourseSchema = new mongoose.Schema(
         let thumbnail;
         try {
           const thumbnailCloud = await uploadImageCloud(file);
-          deleteServerAttachment(file.filename, "document");
           thumbnail = {
             uri: thumbnailCloud.url,
             storedBy: "cloudinary",
@@ -155,6 +154,9 @@ const CourseSchema = new mongoose.Schema(
             storedBy: "server",
           };
         }
+        // Delete temporary file in server folder
+        deleteServerAttachment(file.filename, "document");
+
         this.thumbnail = thumbnail;
 
         return thumbnail;

@@ -108,7 +108,7 @@ const LessonSchema = new mongoose.Schema(
         return video;
       },
 
-      // Delete videp
+      // Delete video
       deleteVideo() {
         this.video && deleteServerAttachment(this.video.uri, "video");
       },

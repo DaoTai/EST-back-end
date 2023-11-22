@@ -19,7 +19,7 @@ const GroupChatSchema = new mongoose.Schema(
       type: [{ type: mongoose.Types.ObjectId, ref: "user" }],
       default: [],
     },
-    lastestChat: {
+    latestChat: {
       type: mongoose.Types.ObjectId,
       ref: "chat",
     },

@@ -8,6 +8,8 @@ import questionRoute from "./question.route";
 import cvRoute from "./cv.route";
 import answerRecordRoute from "./answer-record.route";
 import groupChatRoute from "./group-chat.route";
+import chatRoute from "./chat.route";
+
 import {
   verifyTokenMiddleware,
   verifyTeacherMiddleware,
@@ -20,6 +22,7 @@ const route = (app) => {
   app.use("/cv", verifyTokenMiddleware, cvRoute);
   app.use("/user", verifyTokenMiddleware, userRoute);
   app.use("/group-chat", verifyTokenMiddleware, groupChatRoute);
+  app.use("/chat", verifyTokenMiddleware, chatRoute);
   app.use("/admin", [verifyTokenMiddleware, verifyAdminMiddleware], adminRoute);
   app.use("/courses", [verifyTokenMiddleware, verifyTeacherMiddleware], courseRoute);
   app.use("/answer-records", [verifyTokenMiddleware, verifyTeacherMiddleware], answerRecordRoute);

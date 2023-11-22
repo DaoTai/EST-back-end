@@ -45,6 +45,7 @@ export const deleteServerAttachment = (attachmentName, type) => {
   }
   const attachmentPath = path.join(uri, attachmentName);
   fs.unlink(attachmentPath, (err) => {
+    // Nếu không có lỗi thì err sẽ là null nên cần phải check if
     if (err) {
       console.error(`Failed to delete ${type}`, err);
     }

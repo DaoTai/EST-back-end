@@ -1,6 +1,7 @@
 import GroupChat from "~/app/models/GroupChat.model";
 import ApiError from "~/utils/ApiError";
 import { getUniqueValuesInArray } from "~/utils/functions";
+import { deleteChatByIdGroupChat } from "./Chat.service";
 
 // ===========USER===============
 // Get list group chat by id user
@@ -14,6 +15,8 @@ export const getListGroupChatByUser = async ({ idUser, perPage = 5, page, name }
   const total = await GroupChat.count(condition);
 
   const listGroupChats = await GroupChat.find(condition)
+    .populate("host", "avatar")
+    .populate("latestChat")
     .sort({
       updatedAt: -1,
     })
@@ -64,8 +67,7 @@ export const createGroupChatByUser = async ({ idUser, idMembers, name }) => {
 export const cancelGroupChat = async ({ idUser, idGroupChat }) => {
   const groupChat = await GroupChat.findById(idGroupChat);
   const host = String(groupChat.host);
-  console.log("groupChat: ", groupChat);
-  console.log("id user: ", idUser);
+
   if (host === idUser) {
     throw new ApiError({
       statusCode: 403,
@@ -89,7 +91,7 @@ export const cancelGroupChat = async ({ idUser, idGroupChat }) => {
 };
 
 // Edit group: name, latest message
-export const editGroupChat = async ({ idGroupChat, name, latestMessage }) => {
+export const editGroupChat = async ({ idGroupChat, name, idChat }) => {
   if (name) {
     await GroupChat.updateOne(
       {
@@ -101,8 +103,18 @@ export const editGroupChat = async ({ idGroupChat, name, latestMessage }) => {
     );
   }
 
-  if (latestMessage) {
-    // Chưa đụng tới
+  if (idChat) {
+    await GroupChat.updateOne(
+      {
+        _id: idGroupChat,
+      },
+      {
+        latestChat: idChat,
+      },
+      {
+        new: true,
+      }
+    );
   }
 };
 
@@ -208,8 +220,12 @@ export const unBlockMember = async ({ idUser, idGroupChat, idMember, groupChat }
 
 // delete group
 export const deleteGroup = async ({ idUser, idGroupChat }) => {
-  await GroupChat.deleteOne({
+  const handleDeleteGroup = GroupChat.deleteOne({
     _id: idGroupChat,
     host: idUser,
   });
+
+  const handleDeleteChats = deleteChatByIdGroupChat(idGroupChat);
+
+  await Promise.all([handleDeleteChats, handleDeleteGroup]);
 };

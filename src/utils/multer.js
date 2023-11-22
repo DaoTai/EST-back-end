@@ -32,7 +32,9 @@ const storageVideo = multer.diskStorage({
 });
 
 export const uploadImage = multer({ storage: storageImage });
+
 export const uploadDocument = multer({ storage: storageDocument });
+
 export const uploadVideo = multer({
   storage: storageVideo,
   fileFilter: (req, file, cb) => {

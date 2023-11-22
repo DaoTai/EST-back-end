@@ -37,7 +37,6 @@ class AdminController {
   async approveCourses(req, res, next) {
     try {
       const listIdCourses = req.body.listIds;
-      console.log(listIdCourses);
       if (!Array.isArray(listIdCourses)) {
         return res.status(400).json("List courses are invalid");
       }
@@ -63,7 +62,6 @@ class AdminController {
   async deleteCourse(req, res, next) {
     try {
       if (!req.params.id) return res.status(400).json("No exist id course");
-      console.log(req.params.id);
       await destroyCourseByAdmin(req.params.id);
       return res.sendStatus(204);
     } catch (error) {

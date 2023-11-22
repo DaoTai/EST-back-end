@@ -1,3 +1,4 @@
+import { getListChat } from "~/services/Chat.service";
 import {
   addMembers,
   blockMember,
@@ -49,6 +50,7 @@ class GroupChatController {
     try {
       const idGroupChat = req.params.id;
       const groupchat = await getDetailGroupChat(idGroupChat);
+      await getListChat();
       return res.status(200).json(groupchat);
     } catch (error) {
       next(error);
