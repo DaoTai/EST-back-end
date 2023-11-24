@@ -8,12 +8,12 @@ router.route("/").get(GroupChatController.get).post(GroupChatController.createBy
 
 router.delete("/:id/cancel", GroupChatController.cancel);
 
+router.post("/:id/members", verifyHost, GroupChatController.addMembers);
+
 router
   .route("/:id/members/:idMember")
   .patch(verifyHost, GroupChatController.handleStatusBlockMember)
   .delete(verifyHost, GroupChatController.deleteMember);
-
-router.post("/:id/members", verifyHost, GroupChatController.addMembers);
 
 router
   .route("/:id")

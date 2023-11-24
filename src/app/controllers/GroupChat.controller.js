@@ -1,4 +1,4 @@
-import { getListChat } from "~/services/Chat.service";
+import { getListChatByIdGroupChat } from "~/services/Chat.service";
 import {
   addMembers,
   blockMember,
@@ -50,7 +50,7 @@ class GroupChatController {
     try {
       const idGroupChat = req.params.id;
       const groupchat = await getDetailGroupChat(idGroupChat);
-      await getListChat();
+      await getListChatByIdGroupChat(idGroupChat);
       return res.status(200).json(groupchat);
     } catch (error) {
       next(error);
@@ -89,6 +89,9 @@ class GroupChatController {
       const idUser = req.user._id;
       const idGroupChat = req.params.id;
       const { idMembers } = req.body;
+      if (!idMembers || !Array.isArray(idMembers) || idMembers.length === 0) {
+        return res.status(400).json("Empty new members");
+      }
       await addMembers({
         idMembers,
         idUser,
@@ -110,6 +113,15 @@ class GroupChatController {
       const idGroupChat = req.params.id;
       const idMember = req.params.idMember;
       const option = req.query.option;
+
+      if (!idMember || !option || !idGroupChat) {
+        return res.status(400).json("Invalid payload");
+      }
+
+      if (idMember === idUser) {
+        return res.status(403).json("Host cannot handle");
+      }
+
       if (GROUP_CHAT_STATUS_MEMBER.includes(option)) {
         if (option === "block") {
           await blockMember({

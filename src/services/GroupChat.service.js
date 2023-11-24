@@ -6,22 +6,33 @@ import { deleteChatByIdGroupChat } from "./Chat.service";
 // ===========USER===============
 // Get list group chat by id user
 export const getListGroupChatByUser = async ({ idUser, perPage = 5, page, name }) => {
-  const condition = {
-    host: idUser,
-  };
+  const condition = {};
 
   if (name) condition.name = new RegExp(name, "i");
 
   const total = await GroupChat.count(condition);
 
-  const listGroupChats = await GroupChat.find(condition)
+  const listGroupChats = await GroupChat.find({
+    ...condition,
+    members: {
+      $in: [idUser],
+    },
+  })
     .populate("host", "avatar")
-    .populate("latestChat")
+    .populate("members", "avatar")
+    .populate({
+      path: "latestChat",
+      populate: {
+        path: "sender",
+        select: "username",
+      },
+    })
     .sort({
       updatedAt: -1,
     })
     .skip(perPage * page - perPage)
     .limit(perPage);
+
   return {
     listGroupChats,
     total,
@@ -32,7 +43,8 @@ export const getListGroupChatByUser = async ({ idUser, perPage = 5, page, name }
 // Get detail group chat
 export const getDetailGroupChat = async (idGroupChat) => {
   const groupChat = await GroupChat.findById(idGroupChat)
-    .populate("members", "username avatar")
+    .populate("host", "username avatar")
+    .populate("members", "username avatar favouriteProrammingLanguages")
     .populate("blockedMembers", "username avatar");
   return groupChat;
 };
@@ -186,7 +198,7 @@ export const blockMember = async ({ idUser, idGroupChat, idMember, groupChat }) 
   if (isBlocked) {
     throw new ApiError({
       statusCode: 403,
-      message: "Member is blocked before",
+      message: "Member was blocked before",
     });
   }
 

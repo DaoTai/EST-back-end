@@ -66,7 +66,6 @@ class ChatController {
     try {
       const idChat = req.params.id;
       const idUser = req.user._id;
-      console.log("idUser: ", idUser);
 
       await deleteChat({ idChat, idUser });
       return res.sendStatus(204);
