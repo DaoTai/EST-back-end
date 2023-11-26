@@ -144,7 +144,7 @@ export const restoreCourse = async (idCourse) => {
 };
 
 // Destroy: Allow owner or admin => Done
-// Xoá course + lessons
+// Cần xoá: course(thumbnail), lesson (video), register course
 export const destroyCourse = async (idCourse, idUser) => {
   const course = await Course.findOne({
     _id: idCourse,
@@ -153,16 +153,33 @@ export const destroyCourse = async (idCourse, idUser) => {
   if (course) {
     const isOwner = String(course.createdBy) === idUser;
     if (isOwner) {
+      // // Delete course
       const deletedCouse = await Course.findOneAndDelete({
         _id: idCourse,
+      }).populate("lessons");
+      const lessons = deletedCouse.lessons;
+
+      // Delete video in lesson
+      for (const lesson of lessons) {
+        await lesson.deleteVideo();
+      }
+
+      // // Delete lessons
+      const deleteLesson = Lesson.deleteMany({
+        course: idCourse,
       });
-      // Delete: thumbnail + roadmap + lessons
+
+      // // Delete registered course
+      const deletedRegisteredCourses = RegisterCourse.deleteMany({
+        course: idCourse,
+      });
+
+      // // Delete: thumbnail + roadmap + lessons + registeredCourse
       await Promise.all([
         deletedCouse.deleteThumbnail(),
         deletedCouse.deleteRoadmap(),
-        Lesson.deleteMany({
-          _id: { $in: deletedCouse.lessons },
-        }),
+        deletedRegisteredCourses,
+        deleteLesson,
       ]);
     }
   }
@@ -315,7 +332,7 @@ export const cancelCourse = async (idUser, idCourse) => {
 export const getRegisteredCourses = async (idUser) => {
   const listCourse = await RegisterCourse.find({
     user: idUser,
-  }).populate("course", "name thumbnail slug type lessons category");
+  }).populate("course", "name thumbnail slug type lessons suitableJob");
   return listCourse;
 };
 
@@ -369,6 +386,7 @@ export const getListCoursesByAdmin = async ({ condition, currentPage, perPage })
     .populate("createdBy", "username avatar")
     .skip(perPage * currentPage - perPage)
     .limit(perPage);
+
   const total = await Course.count(condition);
   return { courses, maxPage: Math.round(total / perPage), total };
 };

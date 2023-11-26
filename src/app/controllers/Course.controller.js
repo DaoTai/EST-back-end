@@ -3,13 +3,11 @@ import {
   destroyCourse,
   editCourse,
   getOwnerCourseById,
-  restoreCourse,
   getOwnerCourses,
-  softDeleteCourse,
   getTrashedCourses,
-  getCourseById,
+  restoreCourse,
+  softDeleteCourse,
 } from "~/services/Course.service";
-import path from "path";
 class CourseController {
   // Only my courses
   // [GET] courses

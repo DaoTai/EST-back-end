@@ -3,6 +3,7 @@ import Course from "~/app/models/Course.model";
 import Lesson from "~/app/models/Lesson.model";
 import LessonComment from "~/app/models/LessonComment.model";
 import RegisterCourse from "~/app/models/RegisterCourse.model";
+import ApiError from "~/utils/ApiError";
 import slugify from "~/utils/slugify";
 
 // Get list lessons by id course
@@ -43,7 +44,7 @@ export const createLesson = async (idCourse, data, file) => {
     course: idCourse,
     ...data,
   });
-  file && newLesson.createVideo(file);
+  file && (await newLesson.createVideo(file));
   await Course.updateOne(
     { _id: idCourse },
     {
@@ -80,7 +81,7 @@ export const editLesson = async (idLesson, data, file) => {
   if (file) {
     const newLesson = new Lesson();
     values.video = newLesson.createVideo(file);
-    lesson.deleteVideo();
+    await lesson.deleteVideo();
   }
 
   const editedLesson = await Lesson.findByIdAndUpdate(idLesson, values, {
@@ -90,21 +91,25 @@ export const editLesson = async (idLesson, data, file) => {
 };
 
 // Delete lesson
-// Xoá lesson + lesson tại Course
+// Xoá lesson: lesson + passedLesson in Register Course + comment tại Course
 export const deleteLesson = async (idLesson) => {
   if (!idLesson) return;
   const deletedLesson = await Lesson.findByIdAndDelete(idLesson);
-  deletedLesson.deleteVideo();
-  await Course.updateOne(
+  const handleDeleteComment = LessonComment.deleteMany({
+    lesson: idLesson,
+  });
+  const handleDeletePassedLesson = RegisterCourse.updateOne(
     {
-      _id: deletedLesson.course,
+      course: deletedLesson.course,
     },
     {
       $pull: {
-        lessons: deletedLesson._id,
+        passedLessons: deletedLesson._id,
       },
     }
   );
+
+  Promise.all([deletedLesson.deleteVideo(), handleDeleteComment, handleDeletePassedLesson]);
   return deletedLesson;
 };
 
@@ -184,6 +189,12 @@ export const getDetailLessonToLearn = async (idLesson, idUser) => {
 // Get answer of user by id lesson
 export const getUserAnswersByIdLesson = async (idUser, idLesson) => {
   const lesson = await Lesson.findById(idLesson);
+  if (!lesson) {
+    throw new ApiError({
+      statusCode: 404,
+      message: "No exist lesson",
+    });
+  }
   const listRecords = await AnswerRecord.find({
     question: {
       $in: lesson.questions,

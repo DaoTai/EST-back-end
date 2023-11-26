@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { deleteServerAttachment, transformAttachmentUri } from "~/utils/attachment";
 import AttachmentSchema from "~/utils/attachment/Schema";
-import slugify from "~/utils/slugify";
+import LessonCommentModel from "./LessonComment.model";
 
 const ReportSchema = new mongoose.Schema(
   {
@@ -32,13 +32,7 @@ const LessonSchema = new mongoose.Schema(
       trim: true,
       minLength: [3, "Name lesson is least at 3 characters"],
     },
-    slug: {
-      type: String,
-      default: function () {
-        return slugify(this.name);
-      },
-      unique: true,
-    },
+
     isLaunching: {
       type: Boolean,
       default: true,
@@ -86,7 +80,6 @@ const LessonSchema = new mongoose.Schema(
           _id: this._id,
           course: this.course,
           name: this.name,
-          slug: this.slug,
           isLaunching: this.isLaunching,
           theory: this.theory,
           references: this.references,
@@ -98,7 +91,7 @@ const LessonSchema = new mongoose.Schema(
       },
 
       // Create & store video
-      createVideo(file) {
+      async createVideo(file) {
         const video = {
           uri: file.filename,
           storedBy: "server",
@@ -109,8 +102,16 @@ const LessonSchema = new mongoose.Schema(
       },
 
       // Delete video
-      deleteVideo() {
+      async deleteVideo() {
         this.video && deleteServerAttachment(this.video.uri, "video");
+      },
+
+      // Delete comment
+      async deleteComment() {
+        const listComments = await LessonCommentModel.find({
+          lesson: this._id,
+        });
+        console.log("listComments: ", listComments);
       },
     },
   }

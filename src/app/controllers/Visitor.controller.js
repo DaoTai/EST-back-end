@@ -4,7 +4,7 @@ class VisitorController {
   // [GET] search/courses
   async searchCourse(req, res, next) {
     try {
-      const { page, name, category, level, type } = req.query;
+      const { page, name, language, level, type } = req.query;
       const perPage = 2;
       const currentPage = +page || 1;
 
@@ -15,7 +15,7 @@ class VisitorController {
       if (level) condition.level = level;
       if (type) condition.type = type;
       if (name) condition.name = new RegExp(name, "i");
-      if (category) condition.category = new RegExp(category, "i");
+      if (language) condition.programmingLanguages = { $in: [language] };
 
       const result = await searchCourses({
         perPage,

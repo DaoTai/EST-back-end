@@ -217,7 +217,6 @@ class UserController {
       }
       const lesson = await getDetailLessonToLearn(idLesson, idUser);
       const listAnswerRecords = await getUserAnswersByIdLesson(idUser, idLesson);
-
       return res.status(200).json({ lesson, listAnswerRecords });
     } catch (error) {
       next(error);

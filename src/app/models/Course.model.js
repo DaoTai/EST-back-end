@@ -12,10 +12,10 @@ const CourseSchema = new mongoose.Schema(
       minLength: [2, "Name course is at least 2 characters"],
       maxLength: [300, "Name course is maximum 300 characters"],
     },
-    category: {
+    suitableJob: {
       type: String,
       trim: true,
-      required: [true, "Category course is required"],
+      required: [true, "Suitable job is required"],
     },
     level: {
       type: String,
@@ -29,6 +29,7 @@ const CourseSchema = new mongoose.Schema(
     intro: {
       type: String,
       default: "",
+      maxLength: [700, "Name course is maximum 300 characters"],
     },
     thumbnail: {
       type: AttachmentSchema,
@@ -75,7 +76,6 @@ const CourseSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
-
     openDate: Date,
     closeDate: Date,
     roadmap: AttachmentSchema,
@@ -95,7 +95,7 @@ const CourseSchema = new mongoose.Schema(
         return {
           _id: this._id,
           name: this.name,
-          category: this.category,
+          suitableJob: this.suitableJob,
           level: this.level,
           intro: this.intro,
           type: this.type,
@@ -106,6 +106,7 @@ const CourseSchema = new mongoose.Schema(
           closeDate: this.closeDate,
           createdBy: this.createdBy,
           programmingLanguages: this.programmingLanguages,
+          createdAt: this.createdAt,
           thumbnail: transformAttachmentUri(this.thumbnail, "image"),
         };
       },
@@ -115,7 +116,6 @@ const CourseSchema = new mongoose.Schema(
         return {
           ...this.getPreview(),
           status: this.status,
-          createdAt: this.createdAt,
           updatedAt: this.updatedAt,
           deleted: this.deleted,
           deletedAt: this.deletedAt,
