@@ -12,16 +12,20 @@ const GroupChatSchema = new mongoose.Schema(
       required: [true, "Host is required"],
     },
     members: {
-      type: [{ type: mongoose.Types.ObjectId, ref: "user" }],
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
       default: [],
     },
     blockedMembers: {
-      type: [{ type: mongoose.Types.ObjectId, ref: "user" }],
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
       default: [],
     },
     latestChat: {
       type: mongoose.Types.ObjectId,
       ref: "chat",
+    },
+    latestReadBy: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
+      default: [],
     },
   },
   {

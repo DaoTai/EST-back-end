@@ -20,6 +20,7 @@ export const getListGroupChatByUser = async ({ idUser, perPage = 5, page, name }
   })
     .populate("host", "avatar")
     .populate("members", "avatar")
+    .populate("latestChat.chat")
     .populate({
       path: "latestChat",
       populate: {
@@ -32,7 +33,6 @@ export const getListGroupChatByUser = async ({ idUser, perPage = 5, page, name }
     })
     .skip(perPage * page - perPage)
     .limit(perPage);
-
   return {
     listGroupChats,
     total,
@@ -41,11 +41,25 @@ export const getListGroupChatByUser = async ({ idUser, perPage = 5, page, name }
 };
 
 // Get detail group chat
-export const getDetailGroupChat = async (idGroupChat) => {
+export const getDetailGroupChat = async ({ idGroupChat, idUser }) => {
   const groupChat = await GroupChat.findById(idGroupChat)
     .populate("host", "username avatar")
     .populate("members", "username avatar favouriteProrammingLanguages")
     .populate("blockedMembers", "username avatar");
+
+  const isExistedLatestReader = groupChat.latestReadBy.includes(idUser);
+  if (!isExistedLatestReader) {
+    await GroupChat.updateOne(
+      {
+        _id: idGroupChat,
+      },
+      {
+        $push: {
+          latestReadBy: idUser,
+        },
+      }
+    );
+  }
   return groupChat;
 };
 

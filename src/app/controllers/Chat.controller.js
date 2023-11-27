@@ -11,7 +11,7 @@ class ChatController {
   async getByGroupChat(req, res, next) {
     try {
       const idGroupChat = req.params.idGroupChat;
-      const page = +req.query.page;
+      const page = +req.query.page || 1;
       const perPage = 10;
       const result = await getListChatByIdGroupChat({
         idGroupChat,

@@ -26,14 +26,6 @@ const ChatSchema = new mongoose.Schema(
     },
     attachments: {
       type: [AttachmentSchema],
-    },
-    seen: {
-      type: [
-        {
-          type: mongoose.Types.ObjectId,
-          ref: "user",
-        },
-      ],
       default: [],
     },
   },

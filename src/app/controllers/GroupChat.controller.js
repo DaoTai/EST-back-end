@@ -49,8 +49,8 @@ class GroupChatController {
   async getDetail(req, res, next) {
     try {
       const idGroupChat = req.params.id;
-      const groupchat = await getDetailGroupChat(idGroupChat);
-      await getListChatByIdGroupChat(idGroupChat);
+      const idUser = req.user._id;
+      const groupchat = await getDetailGroupChat({ idGroupChat, idUser });
       return res.status(200).json(groupchat);
     } catch (error) {
       next(error);

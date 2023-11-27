@@ -1,9 +1,10 @@
 import Chat from "~/app/models/Chat.model";
+import GroupChat from "~/app/models/GroupChat.model";
 import { getSEOByURL } from "~/utils/SEO";
 import { getUrl } from "~/utils/functions";
 
 // Pagination + Get chats by group chat
-export const getListChatByIdGroupChat = async ({ idGroupChat, perPage = 10, page }) => {
+export const getListChatByIdGroupChat = async ({ idGroupChat, perPage = 10, page = 1 }) => {
   const total = await Chat.count({
     idGroupChat: idGroupChat,
   });
@@ -19,8 +20,8 @@ export const getListChatByIdGroupChat = async ({ idGroupChat, perPage = 10, page
     .limit(perPage);
 
   return {
-    total,
-    listChats,
+    page,
+    listChats: listChats.reverse(),
     maxPage: Math.ceil(total / perPage),
   };
 };
@@ -48,8 +49,22 @@ export const createChat = async ({ idGroupChat, sender, message, files = [] }) =
   if (files && files.length > 0) {
     await chat.uploadAttachments(files);
   }
+  const saved = await chat.save();
+  const detail = await saved.populate("sender");
 
-  return await chat.save();
+  // Update new latest chat in group chat
+  await GroupChat.updateOne(
+    {
+      _id: idGroupChat,
+    },
+    {
+      latestChat: saved._id,
+      $push: {
+        latestReadBy: sender,
+      },
+    }
+  );
+  return detail;
 };
 
 // Update seen users to chat

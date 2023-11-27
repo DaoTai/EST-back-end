@@ -5,7 +5,7 @@ const router = Router();
 router
   .route("/group-chat/:idGroupChat")
   .get(ChatController.getByGroupChat)
-  .post(uploadImage.array("images"), ChatController.create);
+  .post(uploadImage.array("images[]"), ChatController.create);
 
 router.route("/:id").patch(ChatController.seen).delete(ChatController.delete);
 
