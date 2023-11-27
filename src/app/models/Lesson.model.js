@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { deleteServerAttachment, transformAttachmentUri } from "~/utils/attachment";
 import AttachmentSchema from "~/utils/attachment/Schema";
 import LessonCommentModel from "./LessonComment.model";
+import { uploadVideoCloud } from "~/utils/cloudinary";
 
 const ReportSchema = new mongoose.Schema(
   {
@@ -19,6 +20,7 @@ const ReportSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
 const LessonSchema = new mongoose.Schema(
   {
     course: {
@@ -91,19 +93,24 @@ const LessonSchema = new mongoose.Schema(
       },
 
       // Create & store video
-      async createVideo(file) {
+      createVideo(file) {
         const video = {
           uri: file.filename,
           storedBy: "server",
           type: file.mimetype,
         };
+
         this.video = video;
         return video;
       },
 
       // Delete video
-      async deleteVideo() {
-        this.video && deleteServerAttachment(this.video.uri, "video");
+      deleteVideo() {
+        if (this.video) {
+          if (this.video.storedBy === "server") {
+            deleteServerAttachment(this.video.uri, "video");
+          }
+        }
       },
 
       // Delete comment

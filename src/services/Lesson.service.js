@@ -44,7 +44,7 @@ export const createLesson = async (idCourse, data, file) => {
     course: idCourse,
     ...data,
   });
-  file && (await newLesson.createVideo(file));
+  file && newLesson.createVideo(file);
   await Course.updateOne(
     { _id: idCourse },
     {
@@ -81,7 +81,7 @@ export const editLesson = async (idLesson, data, file) => {
   if (file) {
     const newLesson = new Lesson();
     values.video = newLesson.createVideo(file);
-    await lesson.deleteVideo();
+    lesson.deleteVideo();
   }
 
   const editedLesson = await Lesson.findByIdAndUpdate(idLesson, values, {
@@ -207,9 +207,15 @@ export const getUserAnswersByIdLesson = async (idUser, idLesson) => {
 
 // Pass lesson registered course
 export const passLesson = async ({ idLesson, idUser }) => {
-  const lesson = await Lesson.findById(idLesson);
+  const lesson = await Lesson.findById(idLesson).populate("questions");
   if (!lesson) return;
-  if (lesson.questions && lesson.questions.length === 0) {
+
+  const questionsWithOutCode = lesson.questions.filter((question) => question.category !== "code");
+  const totalQuestionWithOutCode = questionsWithOutCode.length;
+  const questionsWithOutCodeIds = questionsWithOutCode.map((question) => question._id);
+
+  // No question in lesson
+  if (totalQuestionWithOutCode === 0) {
     await RegisterCourse.updateOne(
       {
         user: idUser,
@@ -227,11 +233,11 @@ export const passLesson = async ({ idLesson, idUser }) => {
     const totalAnsweredRecords = await AnswerRecord.count({
       user: idUser,
       question: {
-        $in: lesson.questions,
+        $in: questionsWithOutCodeIds,
       },
     });
-    // Nếu đã trả lời hết câu hỏi
-    if (lesson.questions.length === totalAnsweredRecords) {
+    // Nếu đã trả lời hết câu hỏi trắc nghiệm
+    if (totalQuestionWithOutCode === totalAnsweredRecords) {
       await RegisterCourse.updateOne(
         {
           user: idUser,

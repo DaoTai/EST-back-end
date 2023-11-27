@@ -147,11 +147,13 @@ const CourseSchema = new mongoose.Schema(
           thumbnail = {
             uri: thumbnailCloud.url,
             storedBy: "cloudinary",
+            type: file.mimetype,
           };
         } catch (error) {
           thumbnail = {
             uri: file.filename,
             storedBy: "server",
+            type: file.mimetype,
           };
         }
         // Delete temporary file in server folder
