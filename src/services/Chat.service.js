@@ -50,7 +50,7 @@ export const createChat = async ({ idGroupChat, sender, message, files = [] }) =
     await chat.uploadAttachments(files);
   }
   const saved = await chat.save();
-  const detail = await saved.populate("sender");
+  const detail = await saved.populate("sender", "avatar username");
 
   // Update new latest chat in group chat
   await GroupChat.updateOne(
@@ -63,24 +63,6 @@ export const createChat = async ({ idGroupChat, sender, message, files = [] }) =
     }
   );
   return detail;
-};
-
-// Update seen users to chat
-export const appendSeenToChat = async ({ idChat, idMember }) => {
-  const chat = await Chat.findById(idChat);
-  const isSeen = chat.seen.includes(idMember);
-  if (!isSeen) {
-    await Chat.updateOne(
-      {
-        _id: idChat,
-      },
-      {
-        $push: {
-          seen: idMember,
-        },
-      }
-    );
-  }
 };
 
 // Delete chat: onyly user is sender can delete their chat

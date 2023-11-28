@@ -7,6 +7,6 @@ router
   .get(ChatController.getByGroupChat)
   .post(uploadImage.array("images[]"), ChatController.create);
 
-router.route("/:id").patch(ChatController.seen).delete(ChatController.delete);
+router.route("/:id").delete(ChatController.delete);
 
 export default router;

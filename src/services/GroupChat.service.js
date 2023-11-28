@@ -45,16 +45,18 @@ export const getDetailGroupChat = async ({ idGroupChat, idUser }) => {
   const groupChat = await GroupChat.findById(idGroupChat)
     .populate("host", "username avatar")
     .populate("members", "username avatar favouriteProrammingLanguages")
+    .populate("latestReadBy", "username avatar")
     .populate("blockedMembers", "username avatar");
 
-  const isExistedLatestReader = groupChat.latestReadBy.includes(idUser);
-  if (!isExistedLatestReader) {
+  // Checking user seen
+  const isSeen = groupChat.latestReadBy.some((member) => member._id === idUser);
+  if (!isSeen) {
     await GroupChat.updateOne(
       {
         _id: idGroupChat,
       },
       {
-        $push: {
+        $addToSet: {
           latestReadBy: idUser,
         },
       }
@@ -87,6 +89,32 @@ export const createGroupChatByUser = async ({ idUser, idMembers, name }) => {
   });
 
   return await newGroupChat.save();
+};
+
+// Update seen users to chat
+export const appendSeenToChat = async ({ idGroupChat, idMember }) => {
+  const groupChat = await GroupChat.findById(idGroupChat);
+  const isSeen = groupChat.latestReadBy.includes(idMember);
+  console.log("Member đã xem: ", groupChat.latestReadBy);
+  console.log("ID user: ", idMember);
+  console.log("Tình trạng: ", isSeen);
+  // Update new latest seen chat in group chat
+
+  if (!isSeen) {
+    console.log("Chưa xem giờ update");
+    await GroupChat.updateOne(
+      {
+        _id: idGroupChat,
+      },
+      {
+        $push: {
+          latestReadBy: idMember,
+        },
+      }
+    );
+  } else {
+    console.log("Đã xem rồi: ");
+  }
 };
 
 // Cancel group: host cannot be canceled group chat

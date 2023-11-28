@@ -46,21 +46,6 @@ class ChatController {
     }
   }
 
-  // [PATCH] chat/:id
-  async seen(req, res, next) {
-    try {
-      const idChat = req.params.id;
-      const idMember = req.user._id;
-      await appendSeenToChat({
-        idChat,
-        idMember,
-      });
-      return res.sendStatus(200);
-    } catch (error) {
-      next(error);
-    }
-  }
-
   // [DELETE] chat/:id
   async delete(req, res, next) {
     try {
