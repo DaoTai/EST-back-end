@@ -21,7 +21,7 @@ export const getListChatByIdGroupChat = async ({ idGroupChat, perPage = 10, page
 
   return {
     page,
-    listChats: listChats.reverse(),
+    listChats,
     maxPage: Math.ceil(total / perPage),
   };
 };
@@ -59,9 +59,7 @@ export const createChat = async ({ idGroupChat, sender, message, files = [] }) =
     },
     {
       latestChat: saved._id,
-      $push: {
-        latestReadBy: sender,
-      },
+      latestReadBy: [sender],
     }
   );
   return detail;
