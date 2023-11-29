@@ -7,6 +7,7 @@ const router = Router();
 router.route("/").get(GroupChatController.get).post(GroupChatController.createByUser);
 
 router.delete("/:id/cancel", GroupChatController.cancel);
+router.patch("/:id/seen", GroupChatController.seenLatestChat);
 
 router.post("/:id/members", verifyHost, GroupChatController.addMembers);
 

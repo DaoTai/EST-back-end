@@ -95,13 +95,10 @@ export const createGroupChatByUser = async ({ idUser, idMembers, name }) => {
 export const appendSeenToChat = async ({ idGroupChat, idMember }) => {
   const groupChat = await GroupChat.findById(idGroupChat);
   const isSeen = groupChat.latestReadBy.includes(idMember);
-  console.log("Member đã xem: ", groupChat.latestReadBy);
-  console.log("ID user: ", idMember);
-  console.log("Tình trạng: ", isSeen);
+
   // Update new latest seen chat in group chat
 
   if (!isSeen) {
-    console.log("Chưa xem giờ update");
     await GroupChat.updateOne(
       {
         _id: idGroupChat,
@@ -112,8 +109,6 @@ export const appendSeenToChat = async ({ idGroupChat, idMember }) => {
         },
       }
     );
-  } else {
-    console.log("Đã xem rồi: ");
   }
 };
 

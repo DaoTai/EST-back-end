@@ -33,9 +33,9 @@ class Socket {
         socket.to(idGroup).emit("receive chat", chat);
       });
 
-      socket.on("leave group", (idGroup) => {
-        socket.leave(idGroup);
-      });
+      // socket.on("leave group", (idGroup) => {
+      //   socket.leave(idGroup);
+      // });
 
       socket.on("disconnect", () => {
         const listGroups = Object.keys(this.group);

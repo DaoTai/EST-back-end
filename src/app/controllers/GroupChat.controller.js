@@ -69,6 +69,18 @@ class GroupChatController {
     }
   }
 
+  // [PATCH] /group-chat/:id/seen
+  async seenLatestChat(req, res, next) {
+    try {
+      const idGroupChat = req.params.id;
+      const idMember = req.user._id;
+      await appendSeenToChat({ idGroupChat, idMember });
+      return res.sendStatus(200);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   //   [DELETE] /group-chat/:id/cancel
   async cancel(req, res, next) {
     try {
