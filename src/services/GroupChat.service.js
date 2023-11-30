@@ -5,13 +5,9 @@ import { deleteChatByIdGroupChat } from "./Chat.service";
 
 // ===========USER===============
 // Get list group chat by id user
-export const getListGroupChatByUser = async ({ idUser, perPage = 5, page, name }) => {
+export const getListGroupChatByUser = async ({ idUser, name }) => {
   const condition = {};
-
   if (name) condition.name = new RegExp(name, "i");
-
-  const total = await GroupChat.count(condition);
-
   const listGroupChats = await GroupChat.find({
     ...condition,
     members: {
@@ -29,15 +25,11 @@ export const getListGroupChatByUser = async ({ idUser, perPage = 5, page, name }
       },
     })
     .sort({
+      "latestChat.updated": -1,
       updatedAt: -1,
-    })
-    .skip(perPage * page - perPage)
-    .limit(perPage);
-  return {
-    listGroupChats,
-    total,
-    maxPage: Math.ceil(total / perPage),
-  };
+    });
+
+  return listGroupChats;
 };
 
 // Get detail group chat

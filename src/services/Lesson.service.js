@@ -94,10 +94,13 @@ export const editLesson = async (idLesson, data, file) => {
 // Xoá lesson: lesson + passedLesson in Register Course + comment tại Course
 export const deleteLesson = async (idLesson) => {
   if (!idLesson) return;
+  // Xoá lesson
   const deletedLesson = await Lesson.findByIdAndDelete(idLesson);
+  // Xoá comment trong lesson
   const handleDeleteComment = LessonComment.deleteMany({
     lesson: idLesson,
   });
+  // Xoá các lesson đã pass
   const handleDeletePassedLesson = RegisterCourse.updateOne(
     {
       course: deletedLesson.course,
@@ -139,8 +142,8 @@ export const getRegisteredLessons = async ({ idRegisteredCourse, idUser }) => {
     {
       lessons: 1,
     }
-  ).populate("lessons", "_id name isLaunching");
-
+  ).lean();
+  course.lessons = await Lesson.find({ course: course._id }, { name: 1, isLaunching: 1 });
   // Lấy ra các lesson đã bật mode launch và chưa học
   const nextLessons = course?.lessons.filter((lesson) => {
     return lesson.isLaunching && !listIdsPassedLessons.includes(String(lesson._id));

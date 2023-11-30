@@ -112,14 +112,6 @@ const LessonSchema = new mongoose.Schema(
           }
         }
       },
-
-      // Delete comment
-      async deleteComment() {
-        const listComments = await LessonCommentModel.find({
-          lesson: this._id,
-        });
-        console.log("listComments: ", listComments);
-      },
     },
   }
 );

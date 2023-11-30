@@ -9,7 +9,7 @@ import {
   softDeleteCourse,
 } from "~/services/Course.service";
 class CourseController {
-  // Only my courses
+  // Only teacher's courses
   // [GET] courses
   async getOwner(req, res, next) {
     try {
@@ -24,6 +24,7 @@ class CourseController {
   async getOwnerTrashes(req, res, next) {
     try {
       const result = await getTrashedCourses(req.user._id);
+      console.log("result: ", result);
       return res.status(200).json(result);
     } catch (error) {
       next(error);
@@ -44,7 +45,7 @@ class CourseController {
   async get(req, res, next) {
     try {
       const course = await getOwnerCourseById(req.params.id, req.user._id);
-      return res.status(200).json(course ? course.getInfor() : course);
+      return res.status(200).json(course);
     } catch (error) {
       next(error);
     }

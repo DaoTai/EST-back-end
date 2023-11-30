@@ -1,4 +1,4 @@
-import { getDetailCourse, searchCourses } from "~/services/Course.service";
+import { getDetailCourseBySlug, searchCourses } from "~/services/Course.service";
 
 class VisitorController {
   // [GET] search/courses
@@ -11,6 +11,7 @@ class VisitorController {
       // Only approved courses
       const condition = {
         status: "approved",
+        deleted: false,
       };
       if (level) condition.level = level;
       if (type) condition.type = type;
@@ -33,7 +34,7 @@ class VisitorController {
   async getCourse(req, res, next) {
     try {
       const slug = req.params.slug;
-      const course = await getDetailCourse(slug);
+      const course = await getDetailCourseBySlug(slug);
       return res.status(200).json(course);
     } catch (error) {
       next(error);

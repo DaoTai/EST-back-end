@@ -68,10 +68,6 @@ const CourseSchema = new mongoose.Schema(
       type: [{ type: mongoose.Types.ObjectId, ref: "user" }],
       default: [],
     },
-    lessons: {
-      type: [{ type: mongoose.Types.ObjectId, ref: "lesson" }],
-      default: [],
-    },
     programmingLanguages: {
       type: [String],
       default: [],
@@ -100,13 +96,13 @@ const CourseSchema = new mongoose.Schema(
           intro: this.intro,
           type: this.type,
           members: this.members,
-          lessons: this.lessons,
           slug: this.slug,
           openDate: this.openDate,
           closeDate: this.closeDate,
           createdBy: this.createdBy,
           programmingLanguages: this.programmingLanguages,
           createdAt: this.createdAt,
+          totalLessons: this.totalLessons,
           thumbnail: transformAttachmentUri(this.thumbnail, "image"),
         };
       },

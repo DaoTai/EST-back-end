@@ -62,7 +62,6 @@ const ChatSchema = new mongoose.Schema(
       // Delete attachments
       async deleteAttachments() {
         const attachments = [...this.attachments];
-        console.log("attachments: ", attachments);
         if (attachments && attachments.length > 0) {
           for (const attachment of attachments) {
             if (attachment.storedBy === "server") {

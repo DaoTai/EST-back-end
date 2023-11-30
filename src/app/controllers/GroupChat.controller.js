@@ -18,13 +18,9 @@ class GroupChatController {
   // [GET] /group-chat?page
   async get(req, res, next) {
     try {
-      const perPage = 5;
-      const page = +req.query.page;
       const name = req.query.name;
       const result = await getListGroupChatByUser({
         idUser: req.user._id,
-        page,
-        perPage,
         name,
       });
       return res.status(200).json(result);
