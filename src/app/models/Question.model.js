@@ -17,7 +17,6 @@ const QuestionSchema = new mongoose.Schema(
       },
       required: [true, "Question category is required"],
     },
-    expiredTime: Date,
     answers: [
       {
         type: String,

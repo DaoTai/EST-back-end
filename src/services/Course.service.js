@@ -16,10 +16,14 @@ export const getOwnerCourses = async (idUser) => {
   }).lean();
 
   for (const index in courses) {
+    const idCourse = courses[index]._id;
     const totalLessons = await Lesson.count({
-      course: courses[index]._id,
+      course: idCourse,
     });
     courses[index].totalLessons = totalLessons;
+    courses[index].members = await RegisterCourse.find({
+      course: idCourse,
+    });
   }
 
   return courses;
@@ -38,6 +42,7 @@ export const getTrashedCourses = async (idUser) => {
       course: courses[index]._id,
     });
     courses[index].totalLessons = totalLessons;
+    courses[index] = await courses[index].getInfor();
   }
 
   return courses;
@@ -50,14 +55,14 @@ export const getOwnerCourseById = async (idCourse, idUser) => {
     createdBy: idUser,
   });
   course.totalLessons = await Lesson.count({ course: idCourse });
-  return course ? course.getInfor() : null;
+  return course ? await course.getInfor() : null;
 };
 
 // Get by id
 export const getCourseById = async (idCourse) => {
   const course = await Course.findById(idCourse);
   course.totalLessons = await Lesson.count({ course: idCourse });
-  return course;
+  return await course.getInfor();
 };
 
 // Create => Done
@@ -236,8 +241,11 @@ export const searchCourses = async ({ perPage, currentPage, condition }) => {
         averageRating: { $avg: "$rating" },
         totalRating: { $sum: 1 },
       });
+
+    // Get infor course
+    const course = await courses[index].getPreview();
     listCourses.push({
-      ...courses[index].getPreview(),
+      ...course,
       ...rating[0],
     });
   }
@@ -262,12 +270,8 @@ export const getDetailCourseBySlug = async (slug) => {
     select: "-hashedPassword -email -provider",
   });
 
-  const totalLessons = await Lesson.count({
-    course: course._id,
-  });
-
   // Lấy ra TB cộng rating từ RegisterCourse (các khoá học đã có người học)
-  const avgRates = await RegisterCourse.aggregate([
+  const getAvgRates = RegisterCourse.aggregate([
     {
       $match: {
         course: course._id,
@@ -284,8 +288,18 @@ export const getDetailCourseBySlug = async (slug) => {
       },
     },
   ]);
+  const getTotalLessons = Lesson.count({
+    course: course._id,
+  });
+  const getPreviewCourse = course.getPreview();
 
-  return { ...course.toObject(), ...avgRates[0], totalLessons };
+  const [preview, totalLessons, avgRates] = await Promise.all([
+    getPreviewCourse,
+    getTotalLessons,
+    getAvgRates,
+  ]);
+
+  return { ...preview, ...avgRates[0], totalLessons };
 };
 
 // ======== For user  ========
@@ -293,10 +307,15 @@ export const getDetailCourseBySlug = async (slug) => {
 export const registerCourse = async (idUser, idCourse) => {
   const now = new Date();
   const course = await Course.findById(idCourse);
-  const isExistedMember = course.members.includes(idUser);
+
+  // Check status register
+  const isRegistered = await RegisterCourse.exists({
+    user: idUser,
+    course: idCourse,
+  });
 
   // TH: đã là thành viên của course
-  if (isExistedMember) {
+  if (isRegistered) {
     throw new ApiError({
       message: "User was existed member",
       statusCode: 403,
@@ -316,16 +335,6 @@ export const registerCourse = async (idUser, idCourse) => {
     course: idCourse,
   });
   const savedRegister = await register.save();
-  await Course.updateOne(
-    {
-      _id: idCourse,
-    },
-    {
-      $push: {
-        members: idUser,
-      },
-    }
-  );
   return savedRegister;
 };
 
@@ -343,18 +352,6 @@ export const cancelCourse = async (idUser, idCourse) => {
     idRegisteredCourse: idRegisteredCourse,
   });
 
-  // update member for course
-  const exitMember = await Course.updateOne(
-    {
-      _id: idCourse,
-    },
-    {
-      $pull: {
-        members: idUser,
-      },
-    }
-  );
-
   await Promise.all([deleteAnswerRecords, exitMember]);
 };
 
@@ -362,7 +359,7 @@ export const cancelCourse = async (idUser, idCourse) => {
 export const getRegisteredCourses = async (idUser) => {
   const listRegisteredCourse = await RegisterCourse.find({
     user: idUser,
-  }).populate("course", "name thumbnail slug type suitableJob");
+  }).populate("course");
 
   // Danh sách id course trong register course
   const listCourseId = listRegisteredCourse.map((register) => {
@@ -433,9 +430,10 @@ export const getRegisteredCourse = async ({ idRegisteredCourse, idUser }) => {
 
   if (!registeredCourse) return null;
 
-  const course = await Course.findById(registeredCourse.course._id)
-    .populate("createdBy", "username avatar")
-    .lean();
+  const course = await Course.findById(registeredCourse.course._id).populate(
+    "createdBy",
+    "username avatar"
+  );
 
   const lessons = await Lesson.find({ course: course }, { _id: 1 });
   registeredCourse.course.lessons = lessons.map((lesson) => lesson._id);
@@ -456,13 +454,19 @@ export const getListCoursesByAdmin = async ({ condition, currentPage, perPage })
 
   // Get lessons compatible with course
   for (const index in queryCourses) {
+    const idCourse = queryCourses[index]._id;
     const lessons = await Lesson.find(
       {
-        course: queryCourses[index]._id,
+        course: idCourse,
       },
       { reports: 1, name: 1 }
     );
+    const registerCourses = await RegisterCourse.find({
+      course: idCourse,
+    }).populate("user", "-hashedPassword");
+    const members = registerCourses.map((registerCourse) => registerCourse.user);
     queryCourses[index].lessons = lessons;
+    queryCourses[index].members = members;
   }
 
   const total = await Course.count(condition);
@@ -509,6 +513,15 @@ export const destroyCourseByAdmin = async (idCourse) => {
     await deleteLesson(lesson._id);
   }
 
+  // Deleete regiser courses
+  const deletedRegisteredCourses = RegisterCourse.deleteMany({
+    course: idCourse,
+  });
+
   // Delete: thumbnail + roadmap
-  await Promise.all([deletedCouse.deleteThumbnail(), deletedCouse.deleteRoadmap()]);
+  await Promise.all([
+    deletedCouse.deleteThumbnail(),
+    deletedCouse.deleteRoadmap(),
+    deletedRegisteredCourses,
+  ]);
 };

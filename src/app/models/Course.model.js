@@ -3,6 +3,7 @@ import { deleteServerAttachment, transformAttachmentUri } from "~/utils/attachme
 import AttachmentSchema from "~/utils/attachment/Schema";
 import { deleteImageCloud, uploadImageCloud } from "~/utils/cloudinary";
 import slugify from "~/utils/slugify";
+import RegisterCourseModel from "./RegisterCourse.model";
 
 const CourseSchema = new mongoose.Schema(
   {
@@ -64,10 +65,6 @@ const CourseSchema = new mongoose.Schema(
         return slugify(this.name);
       },
     },
-    members: {
-      type: [{ type: mongoose.Types.ObjectId, ref: "user" }],
-      default: [],
-    },
     programmingLanguages: {
       type: [String],
       default: [],
@@ -86,8 +83,22 @@ const CourseSchema = new mongoose.Schema(
   {
     timestamps: true,
     methods: {
+      // Get members
+      async getMembers() {
+        try {
+          const idCourse = this._id;
+          const registerCourses = await RegisterCourseModel.find({
+            course: idCourse,
+          }).populate("user", "-hashedPassword");
+
+          const members = registerCourses.map((register) => register.user);
+          return members;
+        } catch (error) {
+          throw new Error(error);
+        }
+      },
       // Preview for user
-      getPreview() {
+      async getPreview() {
         return {
           _id: this._id,
           name: this.name,
@@ -95,7 +106,7 @@ const CourseSchema = new mongoose.Schema(
           level: this.level,
           intro: this.intro,
           type: this.type,
-          members: this.members,
+          members: await this.getMembers(),
           slug: this.slug,
           openDate: this.openDate,
           closeDate: this.closeDate,
@@ -104,18 +115,18 @@ const CourseSchema = new mongoose.Schema(
           createdAt: this.createdAt,
           totalLessons: this.totalLessons,
           thumbnail: transformAttachmentUri(this.thumbnail, "image"),
+          roadmap: transformAttachmentUri(this.roadmap, "document"),
         };
       },
 
       // Detail for teacher
-      getInfor() {
+      async getInfor() {
         return {
-          ...this.getPreview(),
+          ...(await this.getPreview()),
           status: this.status,
           updatedAt: this.updatedAt,
           deleted: this.deleted,
           deletedAt: this.deletedAt,
-          roadmap: transformAttachmentUri(this.roadmap, "document"),
         };
       },
 

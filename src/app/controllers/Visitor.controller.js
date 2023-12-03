@@ -34,8 +34,8 @@ class VisitorController {
   async getCourse(req, res, next) {
     try {
       const slug = req.params.slug;
-      const course = await getDetailCourseBySlug(slug);
-      return res.status(200).json(course);
+      const result = await getDetailCourseBySlug(slug);
+      return res.status(200).json(result);
     } catch (error) {
       next(error);
     }
