@@ -19,6 +19,7 @@ router.get("/trashes", CourseController.getOwnerTrashes);
 router
   .route("/:id")
   .get(CourseController.get)
+  .post(CourseController.appendMember)
   .patch(uploadFiles, CourseController.edit)
   .delete(CourseController.delete);
 

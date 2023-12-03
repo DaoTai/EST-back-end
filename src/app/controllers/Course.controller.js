@@ -5,6 +5,7 @@ import {
   getOwnerCourseById,
   getOwnerCourses,
   getTrashedCourses,
+  registerCourse,
   restoreCourse,
   softDeleteCourse,
 } from "~/services/Course.service";
@@ -46,6 +47,20 @@ class CourseController {
     try {
       const course = await getOwnerCourseById(req.params.id, req.user._id);
       return res.status(200).json(course);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // [POST] /courses/:id
+  async appendMember(req, res, next) {
+    try {
+      const idCourse = req.params.id;
+      const idUser = req.body.idUser;
+
+      if (!idCourse) return res.status(400).json("Id course is required");
+      await registerCourse(idUser, idCourse);
+      return res.sendStatus(201);
     } catch (error) {
       next(error);
     }
