@@ -15,3 +15,7 @@ route
 // CV
 route.route("/cvs").get(AdminController.getListCvs).delete(AdminController.deleteCvs);
 export default route;
+
+// Questions
+route.get("/questions", AdminController.getQuestions);
+route.delete("/questions/:id", AdminController.deleteQuestion);

@@ -6,6 +6,7 @@ import {
   toggleApproveCourse,
 } from "~/services/Course.service";
 import { sendNotifyApprovedCoursesToTeacher } from "~/services/Notification.service";
+import { deleteQuestion, getListQuestions } from "~/services/Question.service";
 import {
   authorizeAccounts,
   authorizeTeacher,
@@ -133,6 +134,33 @@ class AdminController {
       } else {
         return res.status(400).json("List ids are invalid");
       }
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // [GET] /admin/questions?page=""&content=""
+  async getQuestions(req, res, next) {
+    try {
+      const page = +req.query.page || 1;
+      const content = req.query.content;
+      const category = req.query.category;
+      const result = await getListQuestions({
+        page,
+        content,
+        category,
+      });
+      return res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // [DELETE] /admin/questions/:id
+  async deleteQuestion(req, res, next) {
+    try {
+      await deleteQuestion(req.params.id);
+      return res.sendStatus(204);
     } catch (error) {
       next(error);
     }

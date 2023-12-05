@@ -39,6 +39,34 @@ export const createQuestionByIdLesson = async (idLesson, body) => {
   return newQuestion;
 };
 
+// Get questions
+export const getListQuestions = async ({
+  perPage = 10,
+  page = 1,
+  content,
+  category = "choice",
+}) => {
+  const regex = new RegExp(content, "i");
+
+  const counting = Question.count({
+    content: regex,
+    category,
+  });
+
+  const getData = Question.find({
+    content: regex,
+    category,
+  })
+    .skip(perPage * page - perPage)
+    .limit(perPage);
+  const [total, listQuestions] = await Promise.all([counting, getData]);
+  return {
+    total,
+    listQuestions,
+    maxPage: Math.ceil(total / perPage),
+  };
+};
+
 // Get question by idLesson => Done
 export const getQuestionsByIdLesson = async (idLesson) => {
   const lessons = await Lesson.findById(idLesson, {
@@ -90,7 +118,11 @@ export const deleteQuestion = async (idQuestion) => {
     }
   );
 
-  await Promise.all([deleteQuestion, deleteQuestionInLesson]);
+  const deleteAnswerRecord = AnswerRecord.deleteOne({
+    question: idQuestion,
+  });
+
+  await Promise.all([deleteQuestion, deleteQuestionInLesson, deleteAnswerRecord]);
 };
 
 // Get answer record by ID lesson
