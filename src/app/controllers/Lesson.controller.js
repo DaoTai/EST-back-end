@@ -5,6 +5,7 @@ import {
   deleteLesson,
   getLessonById,
 } from "~/services/Lesson.service";
+import { sendNotifyToMembersInCourse } from "~/services/Notification.service";
 
 class LessonController {
   // [GET] /lessons/:idCourse
@@ -35,6 +36,10 @@ class LessonController {
   async create(req, res, next) {
     try {
       const newLesson = await createLesson(req.params.idCourse, req.body, req.file);
+      await sendNotifyToMembersInCourse({
+        idUser: req.user._id,
+        lesson: newLesson,
+      });
       return res.status(201).json(newLesson.getInfor());
     } catch (error) {
       next(error);

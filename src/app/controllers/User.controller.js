@@ -19,6 +19,10 @@ import {
 } from "~/services/Lesson.service";
 import { answerQuestion, getCustomizeQuestions } from "~/services/Question.service";
 import User from "../models/User.model";
+import {
+  sendNotifyRegisterCourseToTeacher,
+  sendNotifyToLessonComment,
+} from "~/services/Notification.service";
 class UserController {
   // [GET] user/profile
   async searchProfile(req, res, next) {
@@ -154,6 +158,7 @@ class UserController {
       const idUser = req.user._id;
       if (!idCourse) return res.status(400).json("Id course is required");
       const data = await registerCourse(idUser, idCourse);
+      await sendNotifyRegisterCourseToTeacher({ idUser, idCourse });
       return res.status(201).json(data);
     } catch (error) {
       next(error);
@@ -282,6 +287,10 @@ class UserController {
       if (!idLesson) return res.status(400).json("Id lesson is required");
       if (!content) return res.status(400).json("Content comment is required");
       const comment = await createComment({ idUser, idLesson, content });
+      await sendNotifyToLessonComment({
+        idLesson,
+        idUser,
+      });
       return res.status(201).json(comment);
     } catch (error) {
       next(error);

@@ -223,6 +223,7 @@ export const passLesson = async ({ idLesson, idUser }) => {
       {
         user: idUser,
         course: lesson.course,
+        passedLessons: { $nin: [lesson._id] },
       },
       {
         $push: {
@@ -245,6 +246,7 @@ export const passLesson = async ({ idLesson, idUser }) => {
         {
           user: idUser,
           course: lesson.course,
+          passedLessons: { $nin: [lesson._id] },
         },
         {
           $push: {

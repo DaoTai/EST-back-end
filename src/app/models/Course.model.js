@@ -83,6 +83,11 @@ const CourseSchema = new mongoose.Schema(
   {
     timestamps: true,
     methods: {
+      // Get thumbnail
+      getThumbNail() {
+        return transformAttachmentUri(this.thumbnail, "image");
+      },
+
       // Get members
       async getMembers() {
         try {

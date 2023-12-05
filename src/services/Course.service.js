@@ -214,6 +214,30 @@ export const destroyCourse = async (idCourse, idUser) => {
   }
 };
 
+// Register course by user => Done
+export const appendNewUserToCourse = async (idUser, idCourse) => {
+  // Check status register
+  const isRegistered = await RegisterCourse.exists({
+    user: idUser,
+    course: idCourse,
+  });
+
+  // TH: đã là thành viên của course
+  if (isRegistered) {
+    throw new ApiError({
+      message: "User was existed member",
+      statusCode: 403,
+    });
+  }
+
+  const register = new RegisterCourse({
+    user: idUser,
+    course: idCourse,
+  });
+  const savedRegister = await register.save();
+  return savedRegister;
+};
+
 // ======== For visitor  ========
 // Search courses by visitor => Done
 export const searchCourses = async ({ perPage, currentPage, condition }) => {
@@ -346,20 +370,29 @@ export const cancelCourse = async (idUser, idCourse) => {
     course: idCourse,
   });
 
+  if (!deletedRegisteredCourse) {
+    throw new ApiError({
+      message: "Not found or user exited",
+      statusCode: 403,
+    });
+  }
+
   const idRegisteredCourse = deletedRegisteredCourse._id;
-  const deleteAnswerRecords = AnswerRecord.deleteMany({
+  await AnswerRecord.deleteMany({
     user: idUser,
     idRegisteredCourse: idRegisteredCourse,
   });
-
-  await Promise.all([deleteAnswerRecords, exitMember]);
 };
 
 // Get registered courses => Done
 export const getRegisteredCourses = async (idUser) => {
   const listRegisteredCourse = await RegisterCourse.find({
     user: idUser,
-  }).populate("course");
+  })
+    .populate("course")
+    .sort({
+      updatedAt: -1,
+    });
 
   // Danh sách id course trong register course
   const listCourseId = listRegisteredCourse.map((register) => {

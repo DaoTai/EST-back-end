@@ -101,6 +101,10 @@ const UserSchema = new mongoose.Schema(
         return isValid;
       },
 
+      getAvatar() {
+        return transformAttachmentUri(this.avatar, "image");
+      },
+
       // Get infor user: exclude password
       toProfileJSON() {
         return {

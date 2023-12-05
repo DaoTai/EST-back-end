@@ -1,8 +1,6 @@
 import mongoose from "mongoose";
 import { deleteServerAttachment, transformAttachmentUri } from "~/utils/attachment";
 import AttachmentSchema from "~/utils/attachment/Schema";
-import LessonCommentModel from "./LessonComment.model";
-import { uploadVideoCloud } from "~/utils/cloudinary";
 
 const ReportSchema = new mongoose.Schema(
   {

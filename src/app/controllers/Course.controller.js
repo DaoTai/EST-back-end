@@ -1,11 +1,11 @@
 import {
+  appendNewUserToCourse,
   createCourse,
   destroyCourse,
   editCourse,
   getOwnerCourseById,
   getOwnerCourses,
   getTrashedCourses,
-  registerCourse,
   restoreCourse,
   softDeleteCourse,
 } from "~/services/Course.service";
@@ -59,7 +59,7 @@ class CourseController {
       const idUser = req.body.idUser;
 
       if (!idCourse) return res.status(400).json("Id course is required");
-      await registerCourse(idUser, idCourse);
+      await appendNewUserToCourse(idUser, idCourse);
       return res.sendStatus(201);
     } catch (error) {
       next(error);

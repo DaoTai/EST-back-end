@@ -5,6 +5,7 @@ import {
   getListCoursesByAdmin,
   toggleApproveCourse,
 } from "~/services/Course.service";
+import { sendNotifyApprovedCoursesToTeacher } from "~/services/Notification.service";
 import {
   authorizeAccounts,
   authorizeTeacher,
@@ -41,6 +42,7 @@ class AdminController {
         return res.status(400).json("List courses are invalid");
       }
       await approveCourses(listIdCourses);
+      await sendNotifyApprovedCoursesToTeacher({ idUser: req.user._id, listIdCourses });
       return res.sendStatus(200);
     } catch (error) {
       next(error);
