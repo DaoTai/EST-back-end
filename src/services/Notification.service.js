@@ -54,9 +54,10 @@ export const sendNotifyToLessonComment = async ({ idUser, idLesson }) => {
     },
   });
 
+  const sender = await UserModel.findById(idUser);
+
   //   Create notifications
   for (const idUserComment of users) {
-    const user = await UserModel.findById(idUserComment);
     const registerCourse = await RegisterCourseModel.findOne({
       user: idUserComment,
       passedLessons: { $in: idLesson },
@@ -65,10 +66,10 @@ export const sendNotifyToLessonComment = async ({ idUser, idLesson }) => {
       const endpoint = `${registerCourse._id}/${idLesson}`;
       await createNotification({
         field: "lesson-comment",
-        content: user.username + " has comment in lesson",
+        content: sender.username + " has comment in lesson",
+        avatar: sender.getAvatar(),
         receiver: idUserComment,
         sender: idUser,
-        avatar: user.getAvatar(),
         endpoint,
       });
     }

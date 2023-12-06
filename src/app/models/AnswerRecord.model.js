@@ -13,7 +13,7 @@ const AnswerRecordSchema = new mongoose.Schema(
       required: [true, "Required question"],
     },
     idRegisteredCourse: {
-      // Xử lý gọn khi cancel course
+      // Xử lý gọn khi cancel course + dễ dàng lấy điểm trung bình
       type: String,
       required: [true, "Required idRegisterCourse"],
     },

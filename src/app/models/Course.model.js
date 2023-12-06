@@ -16,6 +16,7 @@ const CourseSchema = new mongoose.Schema(
     suitableJob: {
       type: String,
       trim: true,
+      uppercase: true,
       required: [true, "Suitable job is required"],
     },
     level: {
@@ -34,7 +35,7 @@ const CourseSchema = new mongoose.Schema(
     },
     thumbnail: {
       type: AttachmentSchema,
-      required: [true, "Thumbnail course is required"],
+      // required: [true, "Thumbnail course is required"],
     },
     type: {
       type: String,
@@ -66,7 +67,12 @@ const CourseSchema = new mongoose.Schema(
       },
     },
     programmingLanguages: {
-      type: [String],
+      type: [
+        {
+          type: String,
+          uppercase: true,
+        },
+      ],
       default: [],
     },
     openDate: Date,

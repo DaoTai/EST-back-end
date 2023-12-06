@@ -7,7 +7,7 @@ import ApiError from "~/utils/ApiError";
 import slugify from "~/utils/slugify";
 
 // Get list lessons by id course
-export const getLessonsByIdCourse = async ({ idCourse, currentPage, perPage }) => {
+export const getLessonsByIdCourse = async ({ idCourse, currentPage, perPage = 10 }) => {
   const total = await Lesson.count({
     course: idCourse,
   });

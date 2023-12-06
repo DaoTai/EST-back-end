@@ -1,9 +1,9 @@
-import mongoose from "mongoose";
 import AnswerRecord from "~/app/models/AnswerRecord.model";
 import Course from "~/app/models/Course.model";
 import Lesson from "~/app/models/Lesson.model";
 import RegisterCourse from "~/app/models/RegisterCourse.model";
 import ApiError from "~/utils/ApiError";
+import { transformImageUri } from "~/utils/attachment";
 import slugify from "~/utils/slugify";
 import { deleteLesson } from "./Lesson.service";
 
@@ -13,7 +13,11 @@ export const getOwnerCourses = async (idUser) => {
   const courses = await Course.find({
     createdBy: idUser,
     deleted: false,
-  }).lean();
+  })
+    .lean()
+    .sort({
+      createdAt: -1,
+    });
 
   for (const index in courses) {
     const idCourse = courses[index]._id;
@@ -38,13 +42,20 @@ export const getTrashedCourses = async (idUser) => {
 
   // Get lessons
   for (const index in courses) {
-    const totalLessons = await Lesson.count({
-      course: courses[index]._id,
+    const idCourse = courses[index]._id;
+    const getTotalLessons = Lesson.count({
+      course: idCourse,
     });
-    courses[index].totalLessons = totalLessons;
-    courses[index] = await courses[index].getInfor();
-  }
 
+    const getMembers = RegisterCourse.distinct("user", {
+      course: idCourse,
+    });
+
+    const [totalLessons, members] = await Promise.all([getTotalLessons, getMembers]);
+
+    courses[index].members = members;
+    courses[index].totalLessons = totalLessons;
+  }
   return courses;
 };
 
@@ -240,11 +251,14 @@ export const appendNewUserToCourse = async (idUser, idCourse) => {
 
 // ======== For visitor  ========
 // Search courses by visitor => Done
-export const searchCourses = async ({ perPage, currentPage, condition }) => {
+export const searchCourses = async ({ perPage = 10, currentPage, condition }) => {
   const totalCourses = await Course.count(condition);
   const courses = await Course.find(condition, {
     status: 0,
   })
+    .sort({
+      createdAt: -1,
+    })
     .populate("createdBy", "username avatar")
     .skip(currentPage * perPage - perPage)
     .limit(perPage);
@@ -324,6 +338,68 @@ export const getDetailCourseBySlug = async (slug) => {
   ]);
 
   return { ...preview, ...avgRates[0], totalLessons };
+};
+
+// Get avg score each user in 1 course
+// Lấy điểm trung bình của người dùng tại 1 khoá học với các câu trả lời đã có điểm (vì có những answer nhưng chưa có điểm vì bài tập dạng code chưa chấm)
+export const getScoresInLessonsByIdCourse = async (idCourse) => {
+  const listRegisteredCourses = await RegisterCourse.find({
+    course: idCourse,
+  }).lean();
+
+  const idRegisterCourses = listRegisteredCourses.map((item) => String(item._id));
+
+  const listAvgScoreEachUser = await AnswerRecord.aggregate([
+    {
+      $match: {
+        idRegisteredCourse: {
+          $in: idRegisterCourses,
+        },
+        score: {
+          $exists: true,
+        },
+      },
+    },
+  ])
+    .group({
+      _id: "$user",
+      totalAnswerRecords: {
+        $sum: 1,
+      },
+      avgScore: {
+        $avg: "$score",
+      },
+    })
+    .lookup({
+      from: "users",
+      localField: "_id",
+      as: "user",
+      foreignField: "_id",
+      pipeline: [
+        {
+          $project: {
+            username: 1,
+            avatar: 1,
+          },
+        },
+      ],
+    })
+    .unwind("user")
+    .sort({
+      avgScore: -1,
+    });
+
+  const output = listAvgScoreEachUser.map((item) => {
+    return {
+      ...item,
+      user: {
+        ...item.user,
+        avatar: transformImageUri(item.user.avatar),
+      },
+    };
+  });
+
+  return output;
 };
 
 // ======== For user  ========
@@ -481,6 +557,9 @@ export const getRegisteredCourse = async ({ idRegisteredCourse, idUser }) => {
 export const getListCoursesByAdmin = async ({ condition, currentPage, perPage }) => {
   const queryCourses = await Course.find(condition)
     .lean()
+    .sort({
+      createdAt: -1,
+    })
     .populate("createdBy", "username avatar")
     .skip(perPage * currentPage - perPage)
     .limit(perPage);
@@ -521,14 +600,18 @@ export const approveCourses = async (listIdCourses) => {
 // UnApprove course => Done
 export const toggleApproveCourse = async (idCourse) => {
   const course = await Course.findById(idCourse);
-  await Course.updateOne(
+  const newCourse = await Course.findByIdAndUpdate(
     {
       _id: idCourse,
     },
     {
       status: course.status === "pending" ? "approved" : "pending",
+    },
+    {
+      new: true,
     }
   );
+  return newCourse;
 };
 
 // Destroy course by admin => Done

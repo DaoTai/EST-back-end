@@ -12,21 +12,11 @@ class LessonController {
   async getByIdCourse(req, res, next) {
     try {
       const page = +req.query.page || 1;
-      const perPage = 5;
       const result = await getLessonsByIdCourse({
-        perPage,
         idCourse: req.params.idCourse,
         currentPage: page,
       });
       return res.status(200).json(result);
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  // [GET] /lessons/user/:idCourse
-  async getBySlug(req, res, next) {
-    try {
     } catch (error) {
       next(error);
     }

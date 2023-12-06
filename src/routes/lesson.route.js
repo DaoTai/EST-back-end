@@ -15,5 +15,4 @@ router
   .patch(uploadVideo.single("video"), LessonController.edit)
   .delete(LessonController.delete);
 
-router.route("/user/:idCourse").get(LessonController.getBySlug);
 export default router;

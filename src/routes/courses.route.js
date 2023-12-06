@@ -25,5 +25,6 @@ router
 
 router.patch("/:id/restore", CourseController.restore);
 router.delete("/:id/destroy", CourseController.destroy);
+router.get("/:id/avg-scores", CourseController.getAvgScores);
 
 export default router;

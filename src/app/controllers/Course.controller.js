@@ -5,6 +5,7 @@ import {
   editCourse,
   getOwnerCourseById,
   getOwnerCourses,
+  getScoresInLessonsByIdCourse,
   getTrashedCourses,
   restoreCourse,
   softDeleteCourse,
@@ -25,7 +26,6 @@ class CourseController {
   async getOwnerTrashes(req, res, next) {
     try {
       const result = await getTrashedCourses(req.user._id);
-      console.log("result: ", result);
       return res.status(200).json(result);
     } catch (error) {
       next(error);
@@ -101,6 +101,16 @@ class CourseController {
     try {
       await destroyCourse(req.params.id, req.user._id);
       return res.sendStatus(204);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // [GET]  courses/:id/avg-scores
+  async getAvgScores(req, res, next) {
+    try {
+      const data = await getScoresInLessonsByIdCourse(req.params.id);
+      return res.status(200).json(data);
     } catch (error) {
       next(error);
     }

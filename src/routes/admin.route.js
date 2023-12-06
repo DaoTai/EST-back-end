@@ -19,3 +19,12 @@ export default route;
 // Questions
 route.get("/questions", AdminController.getQuestions);
 route.delete("/questions/:id", AdminController.deleteQuestion);
+
+// Statistical
+route.get("/statistical/programming-languages", AdminController.getProrammingLanguages);
+
+route.get(
+  "/statistical/register-by-programming-languages",
+  AdminController.getRegisterByProrammingLanguages
+);
+route.get("/statistical/users", AdminController.getUsers);

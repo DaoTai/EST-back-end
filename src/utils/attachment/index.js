@@ -2,6 +2,15 @@ import fs from "fs";
 import path from "path";
 import env from "../environment";
 
+export const transformImageUri = (attach) => {
+  const newAttach = { ...attach };
+  if (attach?.storedBy === "server") {
+    const uri = env.STATIC_IMAGES_FOLDER;
+    newAttach.uri = `http://${env.HOST_NAME}:${env.PORT}/${uri}/${attach.uri}`;
+  }
+  return newAttach;
+};
+
 export const transformAttachmentUri = (attachment, type) => {
   if (!attachment || !type) return;
   // Vì tính chất tham chiếu nó sẽ trỏ tới params attachment

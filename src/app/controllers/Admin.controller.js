@@ -8,6 +8,12 @@ import {
 import { sendNotifyApprovedCoursesToTeacher } from "~/services/Notification.service";
 import { deleteQuestion, getListQuestions } from "~/services/Question.service";
 import {
+  getAllUsers,
+  getRegisterByProgrammingLanguages,
+  prorammingLanguages,
+  registerByProgrammingLanguages,
+} from "~/services/Statistical.service";
+import {
   authorizeAccounts,
   authorizeTeacher,
   getAllUserWithRole,
@@ -50,11 +56,17 @@ class AdminController {
     }
   }
 
-  //   [PATCH] /admin/courses:id
+  //   [PATCH] /admin/courses/:id
   async toggleApproveCourse(req, res, next) {
     try {
-      if (!req.params.id) return res.status(400).json("No exist id course");
-      await toggleApproveCourse(req.params.id);
+      const idCourse = req.params.id;
+      const updatedCourse = await toggleApproveCourse(idCourse);
+      if (updatedCourse.status === "approved") {
+        await sendNotifyApprovedCoursesToTeacher({
+          idUser: req.user._id,
+          listIdCourses: [idCourse],
+        });
+      }
       return res.sendStatus(200);
     } catch (error) {
       next(error);
@@ -161,6 +173,36 @@ class AdminController {
     try {
       await deleteQuestion(req.params.id);
       return res.sendStatus(204);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // [GET] /admin/statistical/programming-languages
+  async getProrammingLanguages(req, res, next) {
+    try {
+      const data = await prorammingLanguages();
+      return res.status(200).json(data);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // [GET] /admin/statistical/register-by-programming-languages
+  async getRegisterByProrammingLanguages(req, res, next) {
+    try {
+      const data = await registerByProgrammingLanguages();
+      return res.status(200).json(data);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // [GET] /admin/statistical/users
+  async getUsers(req, res, next) {
+    try {
+      const data = await getAllUsers();
+      return res.status(200).json(data);
     } catch (error) {
       next(error);
     }

@@ -5,7 +5,6 @@ class VisitorController {
   async searchCourse(req, res, next) {
     try {
       const { page, name, language, level, type } = req.query;
-      const perPage = 2;
       const currentPage = +page || 1;
 
       // Only approved courses
@@ -19,7 +18,6 @@ class VisitorController {
       if (language) condition.programmingLanguages = { $in: [language] };
 
       const result = await searchCourses({
-        perPage,
         currentPage,
         condition,
       });
