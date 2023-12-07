@@ -67,6 +67,8 @@ const UserSchema = new mongoose.Schema(
     favouriteProrammingLanguages: [
       {
         type: String,
+        uppercase: true,
+        trim: true,
       },
     ],
     hashedPassword: {
