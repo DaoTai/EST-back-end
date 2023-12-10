@@ -7,9 +7,10 @@ import connectDB from "~/config/mongodb";
 import route from "~/routes";
 import env from "~/utils/environment";
 import Socket from "./services/Socket.service";
+import { corsOptions } from "./config/cors";
 
-const PORT = env.PORT || 8000;
-const HOST_NAME = env.HOST_NAME;
+const PORT = env.LOCAL_DEV_APP_PORT || 8000;
+const LOCAL_DEV_HOST_NAME = env.LOCAL_DEV_HOST_NAME;
 // Cấu hình đường dẫn tĩnh cho thư mục public
 const publicPath = path.join(__dirname, "public");
 // Run
@@ -22,11 +23,7 @@ const publicPath = path.join(__dirname, "public");
   // Apply middlewares
   app.use(express.static(publicPath));
 
-  app.use(
-    cors({
-      origin: env.URI_FRONT_END,
-    })
-  );
+  app.use(cors(corsOptions));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
@@ -36,7 +33,16 @@ const publicPath = path.join(__dirname, "public");
   route(app);
   // Middleware handling errors
   app.use(handlingErrorMiddleware);
-  httpServer.listen(PORT, HOST_NAME, () => {
-    console.log(`Server is running on ${HOST_NAME}:${PORT}`);
-  });
+
+  // Production environmet in render.com
+  if (env.BUILD_MODE === "production") {
+    httpServer.listen(process.env.PORT, () => {
+      console.log(`Production BE Server is running on ${process.env.PORT}`);
+    });
+  } else {
+    // Dev environment
+    httpServer.listen(PORT, LOCAL_DEV_HOST_NAME, () => {
+      console.log(`DEV BE Server is running on ${LOCAL_DEV_HOST_NAME}:${PORT}`);
+    });
+  }
 })();

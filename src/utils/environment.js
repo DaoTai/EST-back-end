@@ -1,7 +1,7 @@
 import "dotenv/config";
 const env = {
-  PORT: process.env.PORT,
-  HOST_NAME: process.env.HOST_NAME,
+  LOCAL_DEV_APP_PORT: process.env.LOCAL_DEV_APP_PORT,
+  LOCAL_DEV_HOST_NAME: process.env.LOCAL_DEV_HOST_NAME,
   MONGODB_URI: process.env.MONGODB_URI,
   JWT_ACCESS_TOKEN: process.env.JWT_ACCESS_TOKEN,
   JWT_REFRESH_TOKEN: process.env.JWT_REFRESH_TOKEN,

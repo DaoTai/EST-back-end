@@ -6,7 +6,7 @@ export const transformImageUri = (attach) => {
   const newAttach = { ...attach };
   if (attach?.storedBy === "server") {
     const uri = env.STATIC_IMAGES_FOLDER;
-    newAttach.uri = `http://${env.HOST_NAME}:${env.PORT}/${uri}/${attach.uri}`;
+    newAttach.uri = `http://${env.LOCAL_DEV_HOST_NAME}:${env.LOCAL_DEV_APP_PORT}/${uri}/${attach.uri}`;
   }
   return newAttach;
 };
@@ -31,7 +31,7 @@ export const transformAttachmentUri = (attachment, type) => {
       default:
         throw new Error("Type is invalid");
     }
-    attach.uri = `http://${env.HOST_NAME}:${env.PORT}/${uri}/${attach.uri}`;
+    attach.uri = `http://${env.LOCAL_DEV_HOST_NAME}:${env.LOCAL_DEV_APP_PORT}/${uri}/${attach.uri}`;
   }
   return attach;
 };
