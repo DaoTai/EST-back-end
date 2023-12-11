@@ -4,8 +4,7 @@ import { WHITE_LIST_DOMAINS } from "~/utils/constants";
 
 export const corsOptions = {
   origin: function (origin, callback) {
-    console.log("Origin: ", origin);
-
+    // console.log("origin:", origin);
     // Trong môi trường dev: postman, front-end server side
     if (env.BUILD_MODE === "dev") {
       return callback(null, true);

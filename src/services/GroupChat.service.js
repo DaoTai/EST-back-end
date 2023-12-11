@@ -1,7 +1,7 @@
 import GroupChat from "~/app/models/GroupChat.model";
 import ApiError from "~/utils/ApiError";
 import { getUniqueValuesInArray } from "~/utils/functions";
-import { deleteChatByIdGroupChat } from "./Chat.service";
+import { deleteListChatByIdGroupChat } from "./Chat.service";
 
 // ===========USER===============
 // Get list group chat by id user
@@ -261,12 +261,10 @@ export const unBlockMember = async ({ idUser, idGroupChat, idMember, groupChat }
 
 // delete group
 export const deleteGroup = async ({ idUser, idGroupChat }) => {
-  const handleDeleteGroup = GroupChat.deleteOne({
+  await deleteListChatByIdGroupChat(idGroupChat);
+
+  await GroupChat.deleteOne({
     _id: idGroupChat,
     host: idUser,
   });
-
-  const handleDeleteChats = deleteChatByIdGroupChat(idGroupChat);
-
-  await Promise.all([handleDeleteChats, handleDeleteGroup]);
 };

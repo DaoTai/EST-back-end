@@ -27,11 +27,10 @@ class Socket {
         } else {
           this.group[idGroup] = [idUser];
         }
-        console.log("ALL: ", this.group);
+        console.log("New join: ", this.group);
       });
 
       socket.on("send chat", ({ idGroup, chat }) => {
-        console.log("Chat: ", chat.message);
         socket.to(idGroup).emit("receive chat", chat);
       });
 
@@ -39,16 +38,19 @@ class Socket {
         const listGroups = Object.keys(this.group);
         listGroups.forEach((item) => {
           this.group[item] = this.group[item].filter((id) => id !== socket.id);
+          socket.leave(this.group[item]);
         });
+        console.log("Leave: ", this.group);
       });
 
       socket.on("disconnect", () => {
         const listGroups = Object.keys(this.group);
         listGroups.forEach((item) => {
           this.group[item] = this.group[item].filter((id) => id !== socket.id);
+          socket.leave(this.group[item]);
         });
 
-        console.log("User out: ", this.group);
+        console.log("Disconnect: ", this.group);
       });
     });
   }

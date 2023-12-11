@@ -77,13 +77,17 @@ export const deleteChat = async ({ idChat, idUser }) => {
 };
 
 // Delete chat by group chat
-export const deleteChatByIdGroupChat = async (idGroupChat) => {
-  const listChat = await Chat.find({
+export const deleteListChatByIdGroupChat = async (idGroupChat) => {
+  const listChatIds = await Chat.distinct("_id", {
     idGroupChat,
   });
-  const listIds = listChat.map((chat) => chat._id);
 
-  for (const idChat of listIds) {
-    await deleteChat(idChat);
+  for (const idChat of listChatIds) {
+    const chat = await Chat.findOneAndDelete({
+      _id: idChat,
+    });
+    if (chat && chat.attachments.length > 0) {
+      await chat.deleteAttachments();
+    }
   }
 };
