@@ -1,9 +1,4 @@
-import {
-  appendSeenToChat,
-  createChat,
-  deleteChat,
-  getListChatByIdGroupChat,
-} from "~/services/Chat.service";
+import { createChat, deleteChat, getListChatByIdGroupChat } from "~/services/Chat.service";
 import { editGroupChat } from "~/services/GroupChat.service";
 
 class ChatController {
@@ -27,6 +22,7 @@ class ChatController {
   // [POST] chat/group-chat/:idGroupChat
   async create(req, res, next) {
     try {
+      const idUser = req.user._id;
       const idGroupChat = req.params.idGroupChat;
       const files = req.files;
       const newChat = await createChat({
@@ -39,6 +35,7 @@ class ChatController {
       await editGroupChat({
         idGroupChat,
         idChat: newChat._id,
+        idUser,
       });
       return res.status(201).json(newChat);
     } catch (error) {

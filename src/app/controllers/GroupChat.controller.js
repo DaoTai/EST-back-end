@@ -57,8 +57,9 @@ class GroupChatController {
   async edit(req, res, next) {
     try {
       const idGroupChat = req.params.id;
+      const idUser = req.user._id;
       const { name, latestMessage } = req.body;
-      await editGroupChat({ idGroupChat, name, latestMessage });
+      await editGroupChat({ idGroupChat, name, latestMessage, idUser });
       return res.sendStatus(200);
     } catch (error) {
       next(error);

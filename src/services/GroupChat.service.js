@@ -16,6 +16,7 @@ export const getListGroupChatByUser = async ({ idUser, name }) => {
   })
     .populate("host", "avatar")
     .populate("members", "avatar")
+    .populate("blockedMembers", "username avatar")
     .populate("latestChat.chat")
     .populate({
       path: "latestChat",
@@ -132,11 +133,15 @@ export const cancelGroupChat = async ({ idUser, idGroupChat }) => {
 };
 
 // Edit group: name, latest message
-export const editGroupChat = async ({ idGroupChat, name, idChat }) => {
+export const editGroupChat = async ({ idGroupChat, name, idChat, idUser }) => {
+  // Only not blocked members have author
   if (name) {
     await GroupChat.updateOne(
       {
         _id: idGroupChat,
+        blockedMembers: {
+          $nin: [idUser],
+        },
       },
       {
         name: name,
@@ -148,6 +153,9 @@ export const editGroupChat = async ({ idGroupChat, name, idChat }) => {
     await GroupChat.updateOne(
       {
         _id: idGroupChat,
+        blockedMembers: {
+          $nin: [idUser],
+        },
       },
       {
         latestChat: idChat,
@@ -235,6 +243,9 @@ export const blockMember = async ({ idUser, idGroupChat, idMember, groupChat }) 
     {
       _id: idGroupChat,
       host: idUser,
+      blockedMembers: {
+        $nin: [idUser],
+      },
     },
     {
       $push: {

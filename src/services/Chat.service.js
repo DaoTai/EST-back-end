@@ -1,5 +1,6 @@
 import Chat from "~/app/models/Chat.model";
 import GroupChat from "~/app/models/GroupChat.model";
+import ApiError from "~/utils/ApiError";
 import { getSEOByURL } from "~/utils/SEO";
 import { getUrl } from "~/utils/functions";
 
@@ -28,6 +29,17 @@ export const getListChatByIdGroupChat = async ({ idGroupChat, perPage = 10, page
 
 // Create new chat
 export const createChat = async ({ idGroupChat, sender, message, files = [] }) => {
+  const isBlocked = await GroupChat.exists({
+    blockedMembers: { $in: [sender] },
+  });
+
+  if (isBlocked) {
+    throw new ApiError({
+      statusCode: 401,
+      message: "You are blocked by host",
+    });
+  }
+
   const chat = new Chat({
     idGroupChat,
     sender,
