@@ -5,6 +5,7 @@ class ChatController {
   // [GET] chat/group-chat/:idGroupChat
   async getByGroupChat(req, res, next) {
     try {
+      const idUser = req.user._id;
       const idGroupChat = req.params.idGroupChat;
       const page = +req.query.page || 1;
       const perPage = 10;
@@ -12,6 +13,7 @@ class ChatController {
         idGroupChat,
         page,
         perPage,
+        idUser,
       });
       return res.status(200).json(result);
     } catch (error) {

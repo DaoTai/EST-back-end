@@ -5,7 +5,22 @@ import { getSEOByURL } from "~/utils/SEO";
 import { getUrl } from "~/utils/functions";
 
 // Pagination + Get chats by group chat
-export const getListChatByIdGroupChat = async ({ idGroupChat, perPage = 10, page = 1 }) => {
+export const getListChatByIdGroupChat = async ({ idGroupChat, perPage = 10, page = 1, idUser }) => {
+  // Checking user is member in group chat
+  const isMember = await GroupChat.exists({
+    _id: idGroupChat,
+    members: {
+      $in: [idUser],
+    },
+  });
+
+  if (!isMember) {
+    throw new ApiError({
+      message: "You don't have permission to see chat",
+      statusCode: 401,
+    });
+  }
+
   const total = await Chat.count({
     idGroupChat: idGroupChat,
   });

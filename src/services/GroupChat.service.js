@@ -35,11 +35,23 @@ export const getListGroupChatByUser = async ({ idUser, name }) => {
 
 // Get detail group chat
 export const getDetailGroupChat = async ({ idGroupChat, idUser }) => {
-  const groupChat = await GroupChat.findById(idGroupChat)
+  const groupChat = await GroupChat.findOne({
+    _id: idGroupChat,
+    members: {
+      $in: [idUser],
+    },
+  })
     .populate("host", "username avatar")
     .populate("members", "username avatar favouriteProrammingLanguages")
     .populate("latestReadBy", "username avatar")
     .populate("blockedMembers", "username avatar");
+  // No exist
+  if (!groupChat) {
+    throw new ApiError({
+      statusCode: 401,
+      message: "You are not member in group chat",
+    });
+  }
 
   // Checking user seen
   const isSeen = groupChat.latestReadBy.some((member) => member._id === idUser);
