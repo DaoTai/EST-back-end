@@ -17,20 +17,26 @@ const QuestionSchema = new mongoose.Schema(
       },
       required: [true, "Question category is required"],
     },
-    answers: [
-      {
-        type: String,
-        trim: true,
-        minLength: [2, "Answers are at least 2 answers"],
-      },
-    ],
-    correctAnswers: [
-      {
-        type: String,
-        trim: true,
-        minLength: [1, "Correct answer is not allowed to empty"],
-      },
-    ],
+    answers: {
+      type: [
+        {
+          type: String,
+          trim: true,
+          minLength: [1, "Length answer is at least 1 character"],
+        },
+      ],
+      minLength: [2, "Answers are at least 2 answers"],
+    },
+    correctAnswers: {
+      type: [
+        {
+          type: String,
+          trim: true,
+          minLength: [1, "Correct answer is not allowed to empty"],
+        },
+      ],
+      minLength: [1, "Answers are at least 1 answer"],
+    },
     explaination: { type: String, trim: true },
   },
   {

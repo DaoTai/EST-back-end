@@ -380,6 +380,8 @@ export const getScoresInLessonsByIdCourse = async (idCourse) => {
           $project: {
             username: 1,
             avatar: 1,
+            school: 1,
+            favouriteProrammingLanguages: 1,
           },
         },
       ],

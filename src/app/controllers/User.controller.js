@@ -23,6 +23,7 @@ import {
   sendNotifyRegisterCourseToTeacher,
   sendNotifyToLessonComment,
 } from "~/services/Notification.service";
+import { predictSuitableJobs } from "~/services/AI.service";
 class UserController {
   // [GET] user/profile
   async searchProfile(req, res, next) {
@@ -355,6 +356,12 @@ class UserController {
     } catch (error) {
       next(error);
     }
+  }
+
+  // [GET] user/predict
+  async predict(req, res, nex) {
+    const data = await predictSuitableJobs();
+    return res.status(200).json(data);
   }
 }
 

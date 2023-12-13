@@ -32,5 +32,5 @@ router
 router.get("/lessons/:id", UserController.getLesson);
 router.get("/questions/self-train", UserController.selfTrainQuestions);
 router.post("/questions/:id", UserController.answerQuestion);
-
+router.get("/predict", UserController.predict);
 export default router;

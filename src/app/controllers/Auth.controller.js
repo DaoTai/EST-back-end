@@ -56,7 +56,6 @@ class AuthController {
   async signIn(req, res, next) {
     try {
       const { email, password, provider } = req.body;
-
       // typeof email !== "string": check email phải là string => tránh sql injection
       if (!email || typeof email !== "string")
         return res.status(400).json("Email is required field");
