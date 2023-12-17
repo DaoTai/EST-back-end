@@ -109,7 +109,7 @@ class AdminController {
       const option = req.body.option || "authorize";
 
       if (option === "block" || option === "unBlock") {
-        if (listIds.includes(req.user._id)) {
+        if (listIds.includes(req.user._id) && option === "block") {
           return res.status(403).json("No permission block admin account");
         }
         await authorizeAccounts(option, listIds);

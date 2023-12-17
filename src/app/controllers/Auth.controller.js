@@ -135,7 +135,7 @@ class AuthController {
       const exist = await user.isExistByPassword(email);
       if (!exist) return res.status(401).json("User is not exist");
       const newPassword = await sendNewPassword(email);
-      await User.updateOne(
+      const newUser = await User.updateOne(
         {
           email,
           hashedPassword: {

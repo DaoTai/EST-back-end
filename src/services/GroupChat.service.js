@@ -139,6 +139,7 @@ export const cancelGroupChat = async ({ idUser, idGroupChat }) => {
     {
       $pull: {
         members: idUser,
+        blockedMembers: idUser,
       },
     }
   );
@@ -230,6 +231,7 @@ export const removeMember = async ({ idUser, idGroupChat, idMember }) => {
     {
       $pull: {
         members: idMember,
+        blockedMembers: idMember,
       },
     }
   );

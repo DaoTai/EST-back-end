@@ -2,6 +2,7 @@ import AnswerRecord from "~/app/models/AnswerRecord.model";
 import Course from "~/app/models/Course.model";
 import Lesson from "~/app/models/Lesson.model";
 import LessonComment from "~/app/models/LessonComment.model";
+import QuestionModel from "~/app/models/Question.model";
 import RegisterCourse from "~/app/models/RegisterCourse.model";
 import ApiError from "~/utils/ApiError";
 import slugify from "~/utils/slugify";
@@ -90,8 +91,7 @@ export const editLesson = async (idLesson, data, file) => {
   return editedLesson;
 };
 
-// Delete lesson
-// Xoá lesson: lesson + passedLesson in Register Course + comment tại Course
+// Delete lesson: lesson, comment, passedLesson, question, answer records
 export const deleteLesson = async (idLesson) => {
   if (!idLesson) return;
   // Xoá lesson
@@ -111,8 +111,27 @@ export const deleteLesson = async (idLesson) => {
       },
     }
   );
+  // Xoá các câu hỏi trong bài giảng
+  const handleDeleteQuestions = QuestionModel.deleteMany({
+    _id: {
+      $in: deletedLesson.questions,
+    },
+  });
 
-  Promise.all([deletedLesson.deleteVideo(), handleDeleteComment, handleDeletePassedLesson]);
+  // Xoá các câu trả lời của người học trong bài giảng
+  const handleDeleteAnswerRecords = AnswerRecord.deleteMany({
+    question: {
+      $in: deletedLesson.questions,
+    },
+  });
+
+  Promise.all([
+    deletedLesson.deleteVideo(),
+    handleDeleteComment,
+    handleDeletePassedLesson,
+    handleDeleteQuestions,
+    handleDeleteAnswerRecords,
+  ]);
   return deletedLesson;
 };
 
@@ -132,8 +151,16 @@ export const getRegisteredLessons = async ({ idRegisteredCourse, idUser }) => {
   const registeredCourse = await RegisterCourse.findOne({
     _id: idRegisteredCourse,
     user: idUser,
-  }).populate("passedLessons", "_id name");
-  if (!registeredCourse) return null;
+  })
+    .populate("passedLessons", "_id name")
+    .populate({
+      path: "course",
+      match: {
+        deleted: false,
+      },
+    });
+  // Nếu không tồn tại khoá học đăng ký hoặc khoá học đã bị xoá tạm
+  if (!registeredCourse || !registeredCourse.course) return null;
   const listIdsPassedLessons = registeredCourse.passedLessons.map((lesson) => String(lesson._id));
   const course = await Course.findOne(
     {

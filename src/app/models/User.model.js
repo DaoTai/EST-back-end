@@ -40,6 +40,9 @@ const UserSchema = new mongoose.Schema(
     },
     avatar: {
       type: AttachmentSchema,
+      default: {
+        uri: "https://cdn-icons-png.flaticon.com/512/67/67902.png",
+      },
     },
     bio: {
       type: String,

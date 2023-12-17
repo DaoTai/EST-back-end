@@ -104,6 +104,7 @@ export const editQuestion = async (idQuestion, data) => {
 };
 
 // Delete question => Done
+// Xoá câu hỏi + rút câu hỏi xoá bên Lesson + Xoá các câu trả lời liên quan tới câu hỏi
 export const deleteQuestion = async (idQuestion) => {
   const deleteQuestion = Question.deleteOne({ _id: idQuestion });
 
@@ -118,11 +119,11 @@ export const deleteQuestion = async (idQuestion) => {
     }
   );
 
-  const deleteAnswerRecord = AnswerRecord.deleteOne({
+  const deleteAnswerRecords = AnswerRecord.deleteMany({
     question: idQuestion,
   });
 
-  await Promise.all([deleteQuestion, deleteQuestionInLesson, deleteAnswerRecord]);
+  await Promise.all([deleteQuestion, deleteQuestionInLesson, deleteAnswerRecords]);
 };
 
 // Get answer record by ID lesson

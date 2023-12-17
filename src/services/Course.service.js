@@ -181,6 +181,7 @@ export const restoreCourse = async (idCourse) => {
 
 // Destroy: Allow owner or admin => Done
 // Cần xoá: course(thumbnail), lesson (video), register course
+// + comment tại Course + câu hỏi + câu trả lời của câu hỏi
 export const destroyCourse = async (idCourse, idUser) => {
   const course = await Course.findOne({
     _id: idCourse,
@@ -189,8 +190,7 @@ export const destroyCourse = async (idCourse, idUser) => {
   if (course) {
     const isOwner = String(course.createdBy) === idUser;
     if (isOwner) {
-      // // Delete course
-      const deletedCouse = await Course.findOneAndDelete({
+      const deletedCouse = await Course.findOne({
         _id: idCourse,
       });
 
@@ -204,14 +204,23 @@ export const destroyCourse = async (idCourse, idUser) => {
         lesson.deleteVideo();
       }
 
-      // // Delete lessons
-      const deleteLesson = Lesson.deleteMany({
-        course: idCourse,
-      });
-
       // // Delete registered course
       const deletedRegisteredCourses = RegisterCourse.deleteMany({
         course: idCourse,
+      });
+
+      // Delete lessons
+      const lessonIds = await Lesson.distinct("_id", {
+        course: idCourse,
+      });
+
+      for (const lessonId of lessonIds) {
+        await deleteLesson(lessonId);
+      }
+
+      // // Delete course
+      const deleteCourse = Course.deleteOne({
+        _id: idCourse,
       });
 
       // // Delete: thumbnail + roadmap + lessons + registeredCourse
@@ -219,7 +228,7 @@ export const destroyCourse = async (idCourse, idUser) => {
         deletedCouse.deleteThumbnail(),
         deletedCouse.deleteRoadmap(),
         deletedRegisteredCourses,
-        deleteLesson,
+        deleteCourse,
       ]);
     }
   }
@@ -247,6 +256,109 @@ export const appendNewUserToCourse = async (idUser, idCourse) => {
   });
   const savedRegister = await register.save();
   return savedRegister;
+};
+
+// ======== For admin  ========
+// get list detail information about course => Done
+export const getListCoursesByAdmin = async ({ condition, currentPage, perPage }) => {
+  const queryCourses = await Course.find(condition)
+    .lean()
+    .sort({
+      createdAt: -1,
+    })
+    .populate("createdBy", "username avatar")
+    .skip(perPage * currentPage - perPage)
+    .limit(perPage);
+
+  // Get lessons compatible with course
+  for (const index in queryCourses) {
+    const idCourse = queryCourses[index]._id;
+    const lessons = await Lesson.find(
+      {
+        course: idCourse,
+      },
+      { reports: 1, name: 1 }
+    );
+    const registerCourses = await RegisterCourse.find({
+      course: idCourse,
+    }).populate("user", "-hashedPassword");
+    const members = registerCourses.map((registerCourse) => registerCourse.user);
+    queryCourses[index].lessons = lessons;
+    queryCourses[index].members = members;
+  }
+
+  const total = await Course.count(condition);
+  return { courses: queryCourses, maxPage: Math.round(total / perPage), total };
+};
+
+// Approve courses => Done
+export const approveCourses = async (listIdCourses) => {
+  await Course.updateMany(
+    {
+      _id: { $in: listIdCourses },
+    },
+    {
+      status: "approved",
+    }
+  );
+};
+
+// UnApprove course => Done
+export const toggleApproveCourse = async (idCourse) => {
+  const course = await Course.findById(idCourse);
+  const newCourse = await Course.findByIdAndUpdate(
+    {
+      _id: idCourse,
+    },
+    {
+      status: course.status === "pending" ? "approved" : "pending",
+    },
+    {
+      new: true,
+    }
+  );
+  return newCourse;
+};
+
+// Destroy course by admin => Done
+
+export const destroyCourseByAdmin = async (idCourse) => {
+  const deletedCouse = await Course.findOne({
+    _id: idCourse,
+  });
+
+  if (!deletedCouse) {
+    throw new ApiError({
+      statusCode: 400,
+      message: "Not found course",
+    });
+  }
+
+  // Delete lessons + comment in lessons
+  const lessons = await Lesson.find({
+    course: { $in: idCourse },
+  });
+
+  for (const lesson of lessons) {
+    await deleteLesson(lesson._id);
+  }
+
+  // Deleete regiser courses
+  const deletedRegisteredCourses = RegisterCourse.deleteMany({
+    course: idCourse,
+  });
+
+  const deleteCourse = Course.deleteOne({
+    _id: idCourse,
+  });
+
+  // Delete: thumbnail + roadmap
+  await Promise.all([
+    deletedCouse.deleteThumbnail(),
+    deletedCouse.deleteRoadmap(),
+    deletedRegisteredCourses,
+    deleteCourse,
+  ]);
 };
 
 // ======== For visitor  ========
@@ -464,16 +576,24 @@ export const cancelCourse = async (idUser, idCourse) => {
 
 // Get registered courses => Done
 export const getRegisteredCourses = async (idUser) => {
+  // Các khoá học đăng ký mà khoá học chưa xoá
   const listRegisteredCourse = await RegisterCourse.find({
     user: idUser,
   })
-    .populate("course")
+    .populate({
+      path: "course",
+      match: {
+        deleted: false,
+      },
+    })
     .sort({
       updatedAt: -1,
     });
 
+  const filteredRegisteredCourses = listRegisteredCourse.filter((course) => course.course !== null);
+
   // Danh sách id course trong register course
-  const listCourseId = listRegisteredCourse.map((register) => {
+  const listCourseId = filteredRegisteredCourses.map((register) => {
     return register.course._id;
   });
 
@@ -493,7 +613,7 @@ export const getRegisteredCourses = async (idUser) => {
     return acc;
   }, {});
 
-  const jsonListRegisteredCourse = JSON.parse(JSON.stringify(listRegisteredCourse));
+  const jsonListRegisteredCourse = JSON.parse(JSON.stringify(filteredRegisteredCourses));
 
   // Trả về danh sách các khoá học đăng ký, mỗi course sẽ lấy ra id lesson tương ứng
   const output = jsonListRegisteredCourse.map((registerCourse) => {
@@ -552,94 +672,4 @@ export const getRegisteredCourse = async ({ idRegisteredCourse, idUser }) => {
     ...registeredCourse,
     teacher: course.createdBy,
   };
-};
-
-// ======== For admin  ========
-// get list detail information about course => Done
-export const getListCoursesByAdmin = async ({ condition, currentPage, perPage }) => {
-  const queryCourses = await Course.find(condition)
-    .lean()
-    .sort({
-      createdAt: -1,
-    })
-    .populate("createdBy", "username avatar")
-    .skip(perPage * currentPage - perPage)
-    .limit(perPage);
-
-  // Get lessons compatible with course
-  for (const index in queryCourses) {
-    const idCourse = queryCourses[index]._id;
-    const lessons = await Lesson.find(
-      {
-        course: idCourse,
-      },
-      { reports: 1, name: 1 }
-    );
-    const registerCourses = await RegisterCourse.find({
-      course: idCourse,
-    }).populate("user", "-hashedPassword");
-    const members = registerCourses.map((registerCourse) => registerCourse.user);
-    queryCourses[index].lessons = lessons;
-    queryCourses[index].members = members;
-  }
-
-  const total = await Course.count(condition);
-  return { courses: queryCourses, maxPage: Math.round(total / perPage), total };
-};
-
-// Approve courses => Done
-export const approveCourses = async (listIdCourses) => {
-  await Course.updateMany(
-    {
-      _id: { $in: listIdCourses },
-    },
-    {
-      status: "approved",
-    }
-  );
-};
-
-// UnApprove course => Done
-export const toggleApproveCourse = async (idCourse) => {
-  const course = await Course.findById(idCourse);
-  const newCourse = await Course.findByIdAndUpdate(
-    {
-      _id: idCourse,
-    },
-    {
-      status: course.status === "pending" ? "approved" : "pending",
-    },
-    {
-      new: true,
-    }
-  );
-  return newCourse;
-};
-
-// Destroy course by admin => Done
-export const destroyCourseByAdmin = async (idCourse) => {
-  const deletedCouse = await Course.findOneAndDelete({
-    _id: idCourse,
-  });
-
-  // Delete lessons + comment in lessons
-  const lessons = await Lesson.find({
-    course: { $in: idCourse },
-  });
-
-  for (const lesson of lessons) {
-    await deleteLesson(lesson._id);
-  }
-
-  // Deleete regiser courses
-  const deletedRegisteredCourses = RegisterCourse.deleteMany({
-    course: idCourse,
-  });
-
-  // Delete: thumbnail + roadmap
-  await Promise.all([
-    deletedCouse.deleteThumbnail(),
-    deletedCouse.deleteRoadmap(),
-    deletedRegisteredCourses,
-  ]);
 };
