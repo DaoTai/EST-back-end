@@ -12,7 +12,7 @@ class Socket {
 
   // Add user to video room
   addUserToVideoRoom = (room, newUser) => {
-    const isExist = room.some((user) => user.id === newUser.id);
+    const isExist = room.some((user) => user.socketId === newUser.socketId);
     !isExist && room.push(newUser);
   };
 
@@ -54,32 +54,39 @@ class Socket {
     this.io.on("connection", (socket) => {
       // Join room
       socket.on("join video", (data) => {
-        // Data: id group-chat, user(id, avatar, username)
+        // Data: id group-chat, user(avatar, username)
         const { idGroupChat, user } = data;
-
         if (!idGroupChat || !user) return;
-
+        const newUser = {
+          socketId: socket.id,
+          ...user,
+        };
         const idVideoRoom = idGroupChat + "-video";
         socket.join(idVideoRoom);
         if (Array.isArray(this.videoRoom[idVideoRoom])) {
-          this.addUserToVideoRoom(this.videoRoom[idVideoRoom], user);
+          this.addUserToVideoRoom(this.videoRoom[idVideoRoom], newUser);
         } else {
-          this.videoRoom[idVideoRoom] = [user];
+          this.videoRoom[idVideoRoom] = [newUser];
         }
 
         // Trả về danh sách người dùng tham gia
-        const listUsers = this.videoRoom[idVideoRoom].filter((item) => item.id !== user.id);
-        console.log("Danh sách friend đã join: ", listUsers);
+        const listUsers = this.videoRoom[idVideoRoom].filter(
+          (item) => item.socketId !== newUser.socketId
+        );
         socket.emit("all users", listUsers);
       });
 
       // Send signal
       socket.on("send signal", (payload) => {
-        // Payload: userId, callerId, signal (in WebRTC)
-        const { userId, callerId, signal } = payload;
-        this.io.to(userId).emit("user join", {
+        // Payload: userId, callerId, signal (in WebRTC), user
+        // console.log("My socket id: ", socket.id);
+        const { friendSocketId, callerId, signal, user } = payload;
+        // console.log("Friend id: ", userId);
+        // console.log("Caller id: ", callerId);
+        this.io.to(friendSocketId).emit("user join", {
           signal,
           callerId,
+          user,
         });
       });
 
@@ -93,7 +100,16 @@ class Socket {
       });
 
       // Disconnect
-      socket.on("disconnect", () => {});
+      socket.on("disconnect", () => {
+        const videoRooms = Object.keys(this.videoRoom);
+        videoRooms.forEach((videoRoom) => {
+          const users = [...this.videoRoom[videoRoom]];
+          this.videoRoom[videoRoom] = users.filter((user) => {
+            return user.socketId !== socket.id;
+          });
+          socket.to(videoRoom).emit("leaved friend", socket.id);
+        });
+      });
     });
   }
 
