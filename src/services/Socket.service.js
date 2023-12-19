@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 class Socket {
   group = {};
   videoRoom = {};
+  sharingScreen = {};
   constructor(app) {
     this.io = new Server(app, {
       cors: {
@@ -99,8 +100,27 @@ class Socket {
         });
       });
 
+      // Member sharing screen
+      socket.on("on sharing screen", ({ idGroupChat, socketId }) => {
+        const idVideoRoom = idGroupChat + "-video";
+        if (!this.sharingScreen[idVideoRoom]) {
+          this.sharingScreen[idVideoRoom] = socketId;
+        }
+        this.io.to(idVideoRoom).emit("socket id sharing", this.sharingScreen[idVideoRoom]);
+      });
+
+      // Member turn off sharing screen
+      socket.on("off sharing screen", ({ idGroupChat, socketId }) => {
+        const idVideoRoom = idGroupChat + "-video";
+        if (this.sharingScreen[idVideoRoom] === socketId) {
+          delete this.sharingScreen[idVideoRoom];
+        }
+        this.io.to(idVideoRoom).emit("socket id sharing", this.sharingScreen[idVideoRoom]);
+      });
+
       // Disconnect
       socket.on("disconnect", () => {
+        // Leave room +  Delete action sharing
         const videoRooms = Object.keys(this.videoRoom);
         videoRooms.forEach((videoRoom) => {
           // const users = [...this.videoRoom[videoRoom]];
@@ -108,6 +128,11 @@ class Socket {
           this.videoRoom[videoRoom] = users.filter((user) => {
             return user.socketId !== socket.id;
           });
+          // If socket is sharing screen in video call
+          if (this.sharingScreen[videoRoom] === socket.id) {
+            delete this.sharingScreen[videoRoom];
+            this.io.to(videoRoom).emit("socket id sharing", this.sharingScreen[videoRoom]);
+          }
           socket.to(videoRoom).emit("leaved friend", socket.id);
         });
       });
