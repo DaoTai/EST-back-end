@@ -103,7 +103,8 @@ class Socket {
       socket.on("disconnect", () => {
         const videoRooms = Object.keys(this.videoRoom);
         videoRooms.forEach((videoRoom) => {
-          const users = [...this.videoRoom[videoRoom]];
+          // const users = [...this.videoRoom[videoRoom]];
+          const users = this.videoRoom[videoRoom];
           this.videoRoom[videoRoom] = users.filter((user) => {
             return user.socketId !== socket.id;
           });
