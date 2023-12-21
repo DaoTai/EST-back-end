@@ -1,4 +1,5 @@
 import CourseModel from "~/app/models/Course.model";
+import LessonModel from "~/app/models/Lesson.model";
 import LessonCommentModel from "~/app/models/LessonComment.model";
 import Notification from "~/app/models/Notifycation.model";
 import RegisterCourseModel from "~/app/models/RegisterCourse.model";
@@ -103,6 +104,29 @@ export const sendNotifyRegisterCourseToTeacher = async ({ idUser, idCourse }) =>
     content: user.username + " has registered course " + course.name,
     receiver: course.createdBy,
     sender: idUser,
+  });
+};
+
+// Create notify to teacher when member answer code questions
+export const sendNotifyMemberAnswerCode = async ({ idUser, question }) => {
+  const getLesson = LessonModel.findOne({
+    questions: {
+      $in: [question._id],
+    },
+  });
+
+  const getUser = UserModel.findById(idUser);
+  const [lesson, user] = await Promise.all([getLesson, getUser]);
+  if (!lesson) return;
+  const course = await CourseModel.findById(lesson.course).populate("createdBy");
+  const teacher = course.createdBy;
+
+  await createNotification({
+    field: "answer-code-question",
+    content: user.username + " answered " + question.content + " in course " + course.name,
+    receiver: teacher,
+    sender: idUser,
+    endpoint: lesson._id,
   });
 };
 

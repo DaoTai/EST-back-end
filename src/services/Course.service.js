@@ -438,18 +438,18 @@ export const getDetailCourseBySlug = async (slug) => {
       },
     },
   ]);
-  const getTotalLessons = Lesson.count({
+  const getLessons = Lesson.find({
     course: course._id,
   });
   const getPreviewCourse = course.getPreview();
 
-  const [preview, totalLessons, avgRates] = await Promise.all([
+  const [preview, lessons, avgRates] = await Promise.all([
     getPreviewCourse,
-    getTotalLessons,
+    getLessons,
     getAvgRates,
   ]);
 
-  return { ...preview, ...avgRates[0], totalLessons };
+  return { ...preview, ...avgRates[0], lessons };
 };
 
 // Get avg score each user in 1 course

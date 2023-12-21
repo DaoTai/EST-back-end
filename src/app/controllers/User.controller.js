@@ -23,7 +23,11 @@ import {
   sendNotifyRegisterCourseToTeacher,
   sendNotifyToLessonComment,
 } from "~/services/Notification.service";
-import { predictSuitableJobs } from "~/services/AI.service";
+import {
+  getAvgScoreInRegisteredCoursesByIdUser,
+  getPredictData,
+  predictSuitableJobs,
+} from "~/services/AI.service";
 class UserController {
   // [GET] user/profile
   async searchProfile(req, res, next) {
@@ -359,9 +363,25 @@ class UserController {
   }
 
   // [GET] user/predict
-  async predict(req, res, nex) {
-    const data = await predictSuitableJobs();
-    return res.status(200).json(data);
+  async predict(req, res, next) {
+    try {
+      const getMyAvgScores = getAvgScoreInRegisteredCoursesByIdUser(req.user._id);
+      const getAllData = getPredictData();
+      const [myAvgScores, data] = await Promise.all([getMyAvgScores, getAllData]);
+
+      if (getAllData.length === 0 || data.length === 0) {
+        return res.status(400).json("Data not enough");
+      }
+
+      const result = await predictSuitableJobs({
+        data,
+        myAvgScores,
+      });
+
+      return res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
   }
 }
 

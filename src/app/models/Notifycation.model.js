@@ -16,7 +16,13 @@ const NotificationSchema = new mongoose.Schema(
       type: String,
       required: true,
       enum: {
-        values: ["lesson-comment", "my-course", "others", "approved-course"],
+        values: [
+          "lesson-comment",
+          "my-course",
+          "others",
+          "approved-course",
+          "answer-code-question",
+        ],
         message: "Field is invalid",
       },
     },

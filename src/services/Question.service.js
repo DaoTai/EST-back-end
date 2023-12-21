@@ -6,6 +6,7 @@ import { passLesson } from "./Lesson.service";
 import User from "~/app/models/User.model";
 import Course from "~/app/models/Course.model";
 import RegisterCourse from "~/app/models/RegisterCourse.model";
+import { sendNotifyMemberAnswerCode } from "./Notification.service";
 
 // =======Teacher=======
 // Create question
@@ -159,6 +160,10 @@ export const answerQuestion = async ({ idQuestion, idUser, userAnswers, idRegist
 
   // Nếu đã có câu trả lời trước đó rồi thì cập nhật lại (question code, hiện tại có thể redo cả trắc nghiệm)
   if (answerRecord) {
+    await sendNotifyMemberAnswerCode({
+      idUser,
+      question,
+    });
     return await changeAnswerQuestion(answerRecord._id, userAnswers);
   } else {
     const record = new AnswerRecord({
@@ -170,6 +175,10 @@ export const answerQuestion = async ({ idQuestion, idUser, userAnswers, idRegist
     let newRecord;
     if (question.category === "code") {
       newRecord = await record.save();
+      await sendNotifyMemberAnswerCode({
+        idUser,
+        question,
+      });
     } else {
       const correctAnswers = question.correctAnswers;
       const totalCorrectAnswers = correctAnswers.length;
