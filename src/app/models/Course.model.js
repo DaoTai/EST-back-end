@@ -31,11 +31,10 @@ const CourseSchema = new mongoose.Schema(
     intro: {
       type: String,
       default: "",
-      maxLength: [700, "Name course is maximum 300 characters"],
+      maxLength: [700, "Name course is maximum 700 characters"],
     },
     thumbnail: {
       type: AttachmentSchema,
-      // required: [true, "Thumbnail course is required"],
     },
     type: {
       type: String,
@@ -52,6 +51,7 @@ const CourseSchema = new mongoose.Schema(
         values: ["pending", "approved"],
         message: "Status course is invalid",
       },
+      required: [true, "Status course is required"],
       default: "pending",
     },
     createdBy: {

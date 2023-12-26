@@ -420,6 +420,12 @@ export const getDetailCourseBySlug = async (slug) => {
     select: "-hashedPassword -email -provider",
   });
 
+  if (!course)
+    throw new ApiError({
+      message: "Course not found",
+      statusCode: 404,
+    });
+
   // Lấy ra TB cộng rating từ RegisterCourse (các khoá học đã có người học)
   const getAvgRates = RegisterCourse.aggregate([
     {

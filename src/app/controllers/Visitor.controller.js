@@ -1,4 +1,5 @@
 import { getDetailCourseBySlug, searchCourses } from "~/services/Course.service";
+import { getOverviewInfor } from "~/services/Visitor.service";
 
 class VisitorController {
   // [GET] search/courses
@@ -33,6 +34,16 @@ class VisitorController {
     try {
       const slug = req.params.slug;
       const result = await getDetailCourseBySlug(slug);
+      return res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // [GET] overview-infor
+  async getOverViewInfor(req, res, next) {
+    try {
+      const result = await getOverviewInfor();
       return res.status(200).json(result);
     } catch (error) {
       next(error);

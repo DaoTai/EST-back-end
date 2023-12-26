@@ -13,7 +13,7 @@ const LessonCommentSchema = new mongoose.Schema(
     content: {
       type: String,
       trim: true,
-      maxLength: 10000,
+      maxLength: 1000,
       required: [true, "Comment is not empty"],
     },
   },

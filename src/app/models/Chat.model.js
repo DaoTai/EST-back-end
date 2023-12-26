@@ -18,7 +18,7 @@ const ChatSchema = new mongoose.Schema(
     },
     message: {
       type: String,
-      maxLength: [1000000, "Max length of message is 100000"],
+      maxLength: [10000, "Max length of message is 10000"],
       default: "",
     },
     seo: {
