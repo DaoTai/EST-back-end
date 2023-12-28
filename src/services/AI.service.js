@@ -205,13 +205,17 @@ export const getAvgScoresByRegisterCourseIds = async (registerCourseIds) => {
 };
 
 // Lấy dữ liệu để training
-export const getPredictData = async () => {
+export const getPredictData = async (idUser) => {
   const courseIds = await Course.distinct("_id", {});
   const listRegisteredCourseIds = await RegisterCourse.distinct("_id", {
     course: {
       $in: courseIds,
     },
+    user: {
+      $ne: idUser,
+    },
   });
+
   const avgScores = await getAvgScoresByRegisterCourseIds(listRegisteredCourseIds);
 
   return avgScores;

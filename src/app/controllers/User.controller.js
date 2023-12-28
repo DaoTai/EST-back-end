@@ -366,7 +366,7 @@ class UserController {
   async predict(req, res, next) {
     try {
       const getMyAvgScores = getAvgScoreInRegisteredCoursesByIdUser(req.user._id);
-      const getAllData = getPredictData();
+      const getAllData = getPredictData(req.user._id);
       const [myAvgScores, data] = await Promise.all([getMyAvgScores, getAllData]);
 
       if (getAllData.length === 0 || data.length === 0) {
