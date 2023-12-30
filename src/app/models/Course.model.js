@@ -163,7 +163,7 @@ const CourseSchema = new mongoose.Schema(
         try {
           const thumbnailCloud = await uploadImageCloud(file);
           thumbnail = {
-            uri: thumbnailCloud.url,
+            uri: thumbnailCloud.secure_url,
             storedBy: "cloudinary",
             type: file.mimetype,
           };

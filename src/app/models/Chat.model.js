@@ -41,7 +41,7 @@ const ChatSchema = new mongoose.Schema(
             const imageCloud = await uploadImageCloud(file);
             // New image after uploaded
             const image = {
-              uri: imageCloud.url,
+              uri: imageCloud.secure_url,
               storedBy: "cloudinary",
             };
             attachments.push(image);

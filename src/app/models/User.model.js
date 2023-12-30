@@ -186,11 +186,10 @@ const UserSchema = new mongoose.Schema(
       async generateNewAvatar(file) {
         try {
           const imageCloud = await uploadImageCloud(file);
-
           // Xoá file tạm trong thư mục
           deleteServerAttachment(file.filename, "image");
           return {
-            uri: imageCloud.url,
+            uri: imageCloud.secure_url,
             storedBy: "cloudinary",
           };
         } catch (error) {
