@@ -13,7 +13,7 @@ export const corsOptions = {
     if (WHITE_LIST_DOMAINS.includes(origin)) {
       return callback(null, true);
     }
-    console.log("White domain: ", WHITE_LIST_DOMAINS);
+    console.log("Mode: ", env.BUILD_MODE);
     console.log("Origin: ", origin);
     // Cuối cùng nếu domain không được chấp nhận thì trả về lỗi
     return callback(
