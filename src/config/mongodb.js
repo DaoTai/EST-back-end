@@ -4,10 +4,7 @@ const connectDB = () => {
   try {
     mongoose.connect(env.MONGODB_URI, {
       dbName: "est-learn",
-      useNewUrlParser: "true",
-      useUnifiedTopology: "true",
     });
-    console.log("URI Mongo: ", env.MONGODB_URI);
     console.log("Connect to DB successfully!!");
   } catch (err) {
     throw new Error("Connect to DB failed");
