@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import env from "../utils/environment";
 const connectDB = () => {
   try {
+    console.log("MongoURI: ", env.MONGODB_URI);
     mongoose.connect(env.MONGODB_URI, {
       dbName: "est-learn",
       useNewUrlParser: "true",
