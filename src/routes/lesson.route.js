@@ -1,13 +1,8 @@
 import { Router } from "express";
 import LessonController from "~/app/controllers/Lesson.controller";
-import { uploadVideo } from "~/utils/multer";
+import { uploadVideo, uploadVideoByMemory } from "~/utils/multer";
 
 const router = Router();
-
-router
-  .route("/:idCourse")
-  .get(LessonController.getByIdCourse)
-  .post(uploadVideo.single("video"), LessonController.create);
 
 router
   .route("/detail/:id")
@@ -15,4 +10,8 @@ router
   .patch(uploadVideo.single("video"), LessonController.edit)
   .delete(LessonController.delete);
 
+router
+  .route("/:idCourse")
+  .get(LessonController.getByIdCourse)
+  .post(uploadVideo.single("video"), LessonController.create);
 export default router;

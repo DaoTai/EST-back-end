@@ -5,6 +5,7 @@ import LessonComment from "~/app/models/LessonComment.model";
 import QuestionModel from "~/app/models/Question.model";
 import RegisterCourse from "~/app/models/RegisterCourse.model";
 import ApiError from "~/utils/ApiError";
+import { uploadVideoByFirebase } from "~/utils/firebase";
 import slugify from "~/utils/slugify";
 
 // Get list lessons by id course
@@ -37,6 +38,8 @@ export const getLessonById = async (idLesson) => {
 // Tạo mới lesson + thêm lesson_id vào course tương ứng
 export const createLesson = async (idCourse, data, file) => {
   if (!data) return;
+
+  // Delete link references if invalid
   if (data?.references) {
     const inValidRefs = data.references.some((ref) => ref.length < 5);
     inValidRefs && delete data.references;
@@ -45,7 +48,12 @@ export const createLesson = async (idCourse, data, file) => {
     course: idCourse,
     ...data,
   });
-  file && newLesson.createVideo(file);
+
+  // Exist video file
+  if (file) {
+    await newLesson.createVideo(file);
+  }
+
   await Course.updateOne(
     { _id: idCourse },
     {
@@ -81,8 +89,10 @@ export const editLesson = async (idLesson, data, file) => {
 
   if (file) {
     const newLesson = new Lesson();
-    values.video = newLesson.createVideo(file);
-    lesson.deleteVideo();
+    // Delete prev video
+    await lesson.deleteVideo();
+    // Create new video
+    values.video = await newLesson.createVideo(file);
   }
 
   const editedLesson = await Lesson.findByIdAndUpdate(idLesson, values, {

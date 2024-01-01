@@ -142,43 +142,40 @@ const CourseSchema = new mongoose.Schema(
       },
 
       // Get roadmap
-      createRoadmap(file) {
+      async createRoadmap(file) {
+        const roadmapCloud = await uploadImageCloud(file);
         const roadmap = {
-          uri: file.filename,
-          storedBy: "server",
+          uri: roadmapCloud.secure_url,
+          storedBy: "cloudinary",
           type: file.mimetype,
         };
         this.roadmap = roadmap;
+        // Delete temporary file in server folder
+        deleteServerAttachment(file.filename, "document");
         return roadmap;
       },
 
       // Delete roadmap
-      deleteRoadmap() {
-        this.roadmap && deleteServerAttachment(this.roadmap.uri, "document");
+      async deleteRoadmap() {
+        if (this.roadmap) {
+          if (this.roadmap.storedBy === "server")
+            deleteServerAttachment(this.roadmap.uri, "document");
+          if (this.roadmap.storedBy === "cloudinary") await deleteImageCloud(this.roadmap);
+        }
       },
 
       // Upload thumbnail to cloudinary
       async uploadThumbnail(file) {
-        let thumbnail;
-        try {
-          const thumbnailCloud = await uploadImageCloud(file);
-          thumbnail = {
-            uri: thumbnailCloud.secure_url,
-            storedBy: "cloudinary",
-            type: file.mimetype,
-          };
-        } catch (error) {
-          thumbnail = {
-            uri: file.filename,
-            storedBy: "server",
-            type: file.mimetype,
-          };
-        }
+        const thumbnailCloud = await uploadImageCloud(file);
+        const thumbnail = {
+          uri: thumbnailCloud.secure_url,
+          storedBy: "cloudinary",
+          type: file.mimetype,
+        };
+
         // Delete temporary file in server folder
         deleteServerAttachment(file.filename, "document");
-
         this.thumbnail = thumbnail;
-
         return thumbnail;
       },
 

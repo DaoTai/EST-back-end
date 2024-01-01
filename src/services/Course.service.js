@@ -85,7 +85,7 @@ export const createCourse = async (data, idUser, files = []) => {
   });
 
   thumbnail && (await newCourse.uploadThumbnail(thumbnail[0]));
-  roadmap && newCourse.createRoadmap(roadmap[0]);
+  roadmap && (await newCourse.createRoadmap(roadmap[0]));
   return await newCourse.save();
 };
 
@@ -113,8 +113,8 @@ export const editCourse = async (data, idCourse, idUser, files = []) => {
   }
 
   if (roadmap) {
-    oldCourse.deleteRoadmap();
-    data.roadmap = course.createRoadmap(roadmap[0]);
+    await oldCourse.deleteRoadmap();
+    data.roadmap = await course.createRoadmap(roadmap[0]);
   }
 
   // Thay đổi private -> public: xoá openDate & closeDate
@@ -201,7 +201,7 @@ export const destroyCourse = async (idCourse, idUser) => {
 
       // Delete video in lesson
       for (const lesson of lessons) {
-        lesson.deleteVideo();
+        await lesson.deleteVideo();
       }
 
       // // Delete registered course
@@ -412,7 +412,6 @@ export const getDetailCourseBySlug = async (slug) => {
   const course = await Course.findOne(
     { slug: slug, status: "approved" },
     {
-      roadmap: 0,
       status: 0,
     }
   ).populate({

@@ -1,5 +1,6 @@
 import cloudinary from "cloudinary";
 import env from "./environment";
+import ApiError from "./ApiError";
 cloudinary.v2.config({
   cloud_name: env.CLOUDINARY_NAME,
   api_key: env.CLOUDINARY_API_KEY,
@@ -42,6 +43,10 @@ export const deleteImageCloud = async (attachment) => {
       await deleteFileCloudById(id);
     } catch (error) {
       console.error("Delete image cloudinary failed");
+      throw new ApiError({
+        statusCode: 500,
+        message: "Delete image cloudinary failed",
+      });
     }
   }
 };

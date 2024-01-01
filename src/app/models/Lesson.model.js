@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { deleteServerAttachment, transformAttachmentUri } from "~/utils/attachment";
 import AttachmentSchema from "~/utils/attachment/Schema";
+import { deleteFirebaseAttachment, uploadVideoByFirebase } from "~/utils/firebase";
 
 const ReportSchema = new mongoose.Schema(
   {
@@ -92,11 +93,12 @@ const LessonSchema = new mongoose.Schema(
       },
 
       // Create & store video
-      createVideo(file) {
+      async createVideo(file) {
+        const downloadURL = await uploadVideoByFirebase(file);
         const video = {
-          uri: file.filename,
-          storedBy: "server",
-          type: file.mimetype,
+          storedBy: "firebase",
+          type: "video",
+          uri: downloadURL,
         };
 
         this.video = video;
@@ -104,10 +106,14 @@ const LessonSchema = new mongoose.Schema(
       },
 
       // Delete video
-      deleteVideo() {
+      async deleteVideo() {
         if (this.video) {
           if (this.video.storedBy === "server") {
             deleteServerAttachment(this.video.uri, "video");
+          }
+
+          if (this.video.storedBy === "firebase") {
+            await deleteFirebaseAttachment(this.video.uri);
           }
         }
       },
