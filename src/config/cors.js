@@ -13,7 +13,7 @@ export const corsOptions = {
     if (WHITE_LIST_DOMAINS.includes(origin)) {
       return callback(null, true);
     }
-
+    return callback(null, true);
     // Cuối cùng nếu domain không được chấp nhận thì trả về lỗi
     return callback(
       new ApiError({
