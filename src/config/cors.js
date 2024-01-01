@@ -4,7 +4,6 @@ import { WHITE_LIST_DOMAINS } from "~/utils/constants";
 
 export const corsOptions = {
   origin: function (origin, callback) {
-    console.log("origin: ", origin);
     // Trong môi trường dev: postman, front-end server side
     if (env.BUILD_MODE === "dev") {
       return callback(null, true);
@@ -14,6 +13,8 @@ export const corsOptions = {
     if (WHITE_LIST_DOMAINS.includes(origin)) {
       return callback(null, true);
     }
+    console.log("White domain: ", WHITE_LIST_DOMAINS);
+    console.log("Origin: ", origin);
     // Cuối cùng nếu domain không được chấp nhận thì trả về lỗi
     return callback(
       new ApiError({
