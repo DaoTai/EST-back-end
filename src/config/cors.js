@@ -16,12 +16,12 @@ export const corsOptions = {
     console.log("Origin: ", origin);
     return callback(null, true);
     // Cuối cùng nếu domain không được chấp nhận thì trả về lỗi
-    return callback(
-      new ApiError({
-        statusCode: 403,
-        message: `${origin} not allowed by our CORS Policy.`,
-      })
-    );
+    // return callback(
+    //   new ApiError({
+    //     statusCode: 403,
+    //     message: `${origin} not allowed by our CORS Policy.`,
+    //   })
+    // );
   },
   // Some legacy browsers (IE11, various SmartTVs) choke on 204
   optionsSuccessStatus: 200,
