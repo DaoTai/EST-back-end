@@ -7,7 +7,7 @@ const router = Router();
 router
   .route("/detail/:id")
   .get(LessonController.getById)
-  .patch(uploadVideo.single("video"), LessonController.edit)
+  .put(uploadVideo.single("video"), LessonController.edit)
   .delete(LessonController.delete);
 
 router
