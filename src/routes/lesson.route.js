@@ -1,14 +1,12 @@
 import { Router } from "express";
 import LessonController from "~/app/controllers/Lesson.controller";
-import { uploadVideo, uploadVideoByMemory } from "~/utils/multer";
+import { uploadVideo } from "~/utils/multer";
 
 const router = Router();
 
-router
-  .route("/detail/:id")
-  .get(LessonController.getById)
-  .put(uploadVideo.single("video"), LessonController.edit)
-  .delete(LessonController.delete);
+router.post("/detail/:id/edit", uploadVideo.single("video"), LessonController.edit);
+
+router.route("/detail/:id").get(LessonController.getById).delete(LessonController.delete);
 
 router
   .route("/:idCourse")
