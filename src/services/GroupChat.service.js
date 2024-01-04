@@ -15,7 +15,7 @@ export const getListGroupChatByUser = async ({ idUser, name }) => {
     },
   })
     .populate("host", "avatar")
-    .populate("members", "avatar")
+    .populate("members", "avatar username")
     .populate("blockedMembers", "username avatar")
     .populate("latestChat.chat")
     .populate({

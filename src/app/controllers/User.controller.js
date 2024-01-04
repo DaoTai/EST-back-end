@@ -372,12 +372,12 @@ class UserController {
       if (getAllData.length === 0 || data.length === 0) {
         return res.status(400).json("Data not enough");
       }
+      console.log("myAvgScores: ", myAvgScores);
 
       const result = await predictSuitableJobs({
         data,
         myAvgScores,
       });
-
       return res.status(200).json(result);
     } catch (error) {
       next(error);

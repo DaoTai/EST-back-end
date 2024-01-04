@@ -65,8 +65,9 @@ export const getOwnerCourseById = async (idCourse, idUser) => {
     _id: idCourse,
     createdBy: idUser,
   });
+  if (!course) return null;
   course.totalLessons = await Lesson.count({ course: idCourse });
-  return course ? await course.getInfor() : null;
+  return await course.getInfor();
 };
 
 // Get by id

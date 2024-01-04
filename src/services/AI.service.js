@@ -167,6 +167,7 @@ export const getAvgScoresByRegisterCourseIds = async (registerCourseIds) => {
       const registerCourse = await RegisterCourse.findById(avgScore.idRegisteredCourse).populate(
         "course"
       );
+
       const course = registerCourse.course;
       const data = {
         idUser: registerCourse.user,

@@ -34,6 +34,7 @@ class Socket {
         } else {
           this.group[idGroup] = [idUser];
         }
+        this.io.to(idGroup).emit("online users", this.group[idGroup]);
       });
 
       socket.on("send chat", ({ idGroup, chat }) => {
