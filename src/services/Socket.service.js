@@ -41,6 +41,10 @@ class Socket {
         socket.to(idGroup).emit("receive chat", chat);
       });
 
+      socket.on("delete chat", ({ idGroup, idChat }) => {
+        socket.to(idGroup).emit("delete chat", idChat);
+      });
+
       socket.on("disconnect", () => {
         const listGroups = Object.keys(this.group);
         listGroups.forEach((item) => {
