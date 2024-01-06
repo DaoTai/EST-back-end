@@ -22,6 +22,7 @@ const NotificationSchema = new mongoose.Schema(
           "others",
           "approved-course",
           "answer-code-question",
+          "detail-course",
         ],
         message: "Field is invalid",
       },

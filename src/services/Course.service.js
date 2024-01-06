@@ -364,7 +364,7 @@ export const destroyCourseByAdmin = async (idCourse) => {
 
 // ======== For visitor  ========
 // Search courses by visitor => Done
-export const searchCourses = async ({ perPage = 10, currentPage, condition }) => {
+export const searchCourses = async ({ perPage = 10, currentPage, condition, requiredRating }) => {
   const totalCourses = await Course.count(condition);
   const courses = await Course.find(condition, {
     status: 0,
@@ -376,7 +376,7 @@ export const searchCourses = async ({ perPage = 10, currentPage, condition }) =>
     .skip(currentPage * perPage - perPage)
     .limit(perPage);
 
-  const listCourses = [];
+  let listCourses = [];
   for (const index in courses) {
     // Get lesson
     courses[index].totalLessons = await Lesson.count({ course: courses[index]._id });
@@ -399,6 +399,15 @@ export const searchCourses = async ({ perPage = 10, currentPage, condition }) =>
       ...course,
       ...rating[0],
     });
+  }
+
+  // Filter course by rating & sort increase
+  if (requiredRating) {
+    listCourses = listCourses
+      .filter((course) => course.averageRating >= requiredRating)
+      .sort((prev, next) => {
+        return prev.averageRating - next.averageRating;
+      });
   }
 
   return {

@@ -5,7 +5,7 @@ class VisitorController {
   // [GET] search/courses
   async searchCourse(req, res, next) {
     try {
-      const { page, name, language, level, type } = req.query;
+      const { page, name, language, level, type, rating } = req.query;
       const currentPage = +page || 1;
 
       // Only approved courses
@@ -21,6 +21,7 @@ class VisitorController {
       const result = await searchCourses({
         currentPage,
         condition,
+        requiredRating: rating,
       });
       return res.status(200).json(result);
     } catch (error) {
