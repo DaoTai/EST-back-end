@@ -232,7 +232,9 @@ export const getAvgScoreInRegisteredCoursesByIdUser = async (idUser) => {
 
 export const predictSuitableJobs = async ({ data, myAvgScores }) => {
   try {
-    const response = await fetch("http://127.0.0.1:5000/predict", {
+    const local = "http://127.0.0.1:5000/predict";
+    const product = "https://est-edu-ai.onrender.com/predict";
+    const response = await fetch(local, {
       method: "POST",
       body: JSON.stringify({
         trainData: data,

@@ -16,7 +16,7 @@ export const getOwnerCourses = async (idUser) => {
   })
     .lean()
     .sort({
-      createdAt: -1,
+      updatedAt: -1,
     });
 
   for (const index in courses) {
