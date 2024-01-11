@@ -28,6 +28,7 @@ import {
   getPredictData,
   predictSuitableJobs,
 } from "~/services/AI.service";
+import { getCreatedCoursesByTeacher } from "~/services/User.service";
 class UserController {
   // [GET] user/profile
   async searchProfile(req, res, next) {
@@ -76,6 +77,17 @@ class UserController {
             }
           : user
       );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // [GET] user/profile/:id/created-courses
+  async getCreatedCoursesByTeacher(req, res, next) {
+    try {
+      const userId = req.params.id;
+      const createdCourses = await getCreatedCoursesByTeacher(userId);
+      return res.status(200).json(createdCourses);
     } catch (error) {
       next(error);
     }

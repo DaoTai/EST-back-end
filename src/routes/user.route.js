@@ -5,6 +5,7 @@ import { uploadImage } from "~/utils/multer";
 const router = express.Router();
 router.get("/profile", UserController.searchProfile);
 router.patch("/profile", uploadImage.single("avatar"), UserController.editProfile);
+router.get("/profile/:id/created-courses", UserController.getCreatedCoursesByTeacher);
 router.get("/profile/:id", UserController.getProfile);
 router.patch("/change-password", UserController.changePassword);
 router.get("/courses", UserController.getOwnerCourses);

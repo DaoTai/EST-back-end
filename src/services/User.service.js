@@ -1,3 +1,5 @@
+import CourseModel from "~/app/models/Course.model";
+import RegisterCourseModel from "~/app/models/RegisterCourse.model";
 import User from "~/app/models/User.model";
 import ApiError from "~/utils/ApiError";
 
@@ -95,4 +97,12 @@ export const authorizeAccounts = async (option = "block", listIdUsers = []) => {
       deleted: option === "block",
     }
   );
+};
+
+export const getCreatedCoursesByTeacher = async (userId) => {
+  const listCourses = await CourseModel.find({
+    createdBy: userId,
+    status: "approved",
+  });
+  return listCourses;
 };
