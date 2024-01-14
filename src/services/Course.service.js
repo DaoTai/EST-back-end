@@ -364,13 +364,19 @@ export const destroyCourseByAdmin = async (idCourse) => {
 
 // ======== For visitor  ========
 // Search courses by visitor => Done
-export const searchCourses = async ({ perPage = 10, currentPage, condition, requiredRating }) => {
+export const searchCourses = async ({
+  perPage = 10,
+  currentPage,
+  condition,
+  requiredRating,
+  sort = -1,
+}) => {
   const totalCourses = await Course.count(condition);
   const courses = await Course.find(condition, {
     status: 0,
   })
     .sort({
-      createdAt: -1,
+      createdAt: sort,
     })
     .populate("createdBy", "username avatar")
     .skip(currentPage * perPage - perPage)
