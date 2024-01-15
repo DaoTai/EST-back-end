@@ -7,6 +7,7 @@ import User from "~/app/models/User.model";
 import Course from "~/app/models/Course.model";
 import RegisterCourse from "~/app/models/RegisterCourse.model";
 import { sendNotifyMemberAnswerCode } from "./Notification.service";
+import LessonModel from "~/app/models/Lesson.model";
 
 // =======Teacher=======
 // Create question
@@ -59,11 +60,26 @@ export const getListQuestions = async ({
     category,
   })
     .skip(perPage * page - perPage)
-    .limit(perPage);
+    .limit(perPage)
+    .lean();
   const [total, listQuestions] = await Promise.all([counting, getData]);
+  let listDetailQuestions = [];
+
+  for (let question of listQuestions) {
+    const lesson = await LessonModel.findOne({
+      questions: {
+        $in: question,
+      },
+    });
+    listDetailQuestions.push({
+      ...question,
+      lesson,
+    });
+  }
+
   return {
     total,
-    listQuestions,
+    listQuestions: listDetailQuestions,
     maxPage: Math.ceil(total / perPage),
   };
 };

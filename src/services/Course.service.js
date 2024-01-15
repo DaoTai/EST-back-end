@@ -369,7 +369,7 @@ export const searchCourses = async ({
   currentPage,
   condition,
   requiredRating,
-  sort = -1,
+  sort = 1,
 }) => {
   const totalCourses = await Course.count(condition);
   const courses = await Course.find(condition, {
