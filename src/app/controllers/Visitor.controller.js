@@ -5,7 +5,7 @@ class VisitorController {
   // [GET] search/courses
   async searchCourse(req, res, next) {
     try {
-      const { page, name, language, level, type, rating, sort } = req.query;
+      const { page, name, language, level, type, rating, job, sort } = req.query;
       const currentPage = +page || 1;
 
       // Only approved courses
@@ -16,6 +16,7 @@ class VisitorController {
       if (level) condition.level = level;
       if (type) condition.type = type;
       if (name) condition.name = new RegExp(name, "i");
+      if (job) condition.suitableJob = new RegExp(job, "i");
       if (language) condition.programmingLanguages = { $in: [language] };
 
       const result = await searchCourses({
