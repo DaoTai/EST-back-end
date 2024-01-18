@@ -22,7 +22,7 @@ class VisitorController {
         currentPage,
         condition,
         requiredRating: rating,
-        sort: +sort,
+        sort: sort,
       });
       return res.status(200).json(result);
     } catch (error) {

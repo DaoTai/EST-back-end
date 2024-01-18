@@ -37,6 +37,7 @@ const UserSchema = new mongoose.Schema(
       default: function () {
         return this.fullName;
       },
+      required: [true, "Username is required field"],
     },
     avatar: {
       type: AttachmentSchema,

@@ -33,6 +33,7 @@ const LessonSchema = new mongoose.Schema(
       required: [true, "Name lesson is required"],
       trim: true,
       minLength: [3, "Name lesson is least at 3 characters"],
+      maxLength: [50, "Name lesson is max 50 characters"],
     },
 
     isLaunching: {

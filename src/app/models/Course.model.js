@@ -65,6 +65,7 @@ const CourseSchema = new mongoose.Schema(
       default: function () {
         return slugify(this.name);
       },
+      required: [true, "Slug is required"],
     },
     programmingLanguages: {
       type: [
