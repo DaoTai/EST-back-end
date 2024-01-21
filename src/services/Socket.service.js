@@ -34,7 +34,6 @@ class Socket {
         } else {
           this.group[idGroup] = [idUser];
         }
-        this.io.to(idGroup).emit("online users", this.group[idGroup]);
       });
 
       socket.on("send chat", ({ idGroup, chat }) => {
@@ -48,7 +47,7 @@ class Socket {
       socket.on("disconnect", () => {
         const listGroups = Object.keys(this.group);
         listGroups.forEach((item) => {
-          // this.group[item] = this.group[item].filter((id) => id !== socket.id);
+          this.group[item] = this.group[item].filter((id) => id !== socket.id);
           socket.leave(this.group[item]);
         });
       });
@@ -85,10 +84,7 @@ class Socket {
       // Send signal
       socket.on("send signal", (payload) => {
         // Payload: userId, callerId, signal (in WebRTC), user
-        // console.log("My socket id: ", socket.id);
         const { friendSocketId, callerId, signal, user } = payload;
-        // console.log("Friend id: ", userId);
-        // console.log("Caller id: ", callerId);
         this.io.to(friendSocketId).emit("user join", {
           signal,
           callerId,

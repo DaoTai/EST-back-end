@@ -9,11 +9,10 @@ export const corsOptions = {
       return callback(null, true);
     }
 
-    // Kiểm tra dem origin có phải là domain được chấp nhận hay không
+    // Kiểm tra xem origin có phải là domain được chấp nhận hay không
     if (WHITE_LIST_DOMAINS.includes(origin)) {
       return callback(null, true);
     }
-    console.log("Origin: ", origin);
     return callback(null, true);
     // Cuối cùng nếu domain không được chấp nhận thì trả về lỗi
     // return callback(
