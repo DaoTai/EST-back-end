@@ -172,15 +172,11 @@ export const getRegisteredLessons = async ({ idRegisteredCourse, idUser }) => {
   // Nếu không tồn tại khoá học đăng ký hoặc khoá học đã bị xoá tạm
   if (!registeredCourse || !registeredCourse.course) return null;
   const listIdsPassedLessons = registeredCourse.passedLessons.map((lesson) => String(lesson._id));
-  const course = await Course.findOne(
-    {
-      _id: registeredCourse.course,
-    },
-    {
-      lessons: 1,
-    }
-  ).lean();
+  const course = await Course.findOne({
+    _id: registeredCourse.course,
+  }).lean();
   course.lessons = await Lesson.find({ course: course._id }, { name: 1, isLaunching: 1 });
+  console.log(" course.lessons: ", course.lessons);
   // Lấy ra các lesson đã bật mode launch và chưa học
   const nextLessons = course?.lessons.filter((lesson) => {
     return lesson.isLaunching && !listIdsPassedLessons.includes(String(lesson._id));
