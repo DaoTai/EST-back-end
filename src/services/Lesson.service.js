@@ -176,7 +176,6 @@ export const getRegisteredLessons = async ({ idRegisteredCourse, idUser }) => {
     _id: registeredCourse.course,
   }).lean();
   course.lessons = await Lesson.find({ course: course._id }, { name: 1, isLaunching: 1 });
-  console.log(" course.lessons: ", course.lessons);
   // Lấy ra các lesson đã bật mode launch và chưa học
   const nextLessons = course?.lessons.filter((lesson) => {
     return lesson.isLaunching && !listIdsPassedLessons.includes(String(lesson._id));

@@ -1,8 +1,8 @@
 import { Router } from "express";
 import CourseController from "~/app/controllers/Course.controller";
-import { uploadDocument } from "~/utils/multer";
+import { uploadDocument, uploadImage } from "~/utils/multer";
 
-const uploadFiles = uploadDocument.fields([
+const uploadFiles = uploadImage.fields([
   {
     name: "thumbnail",
     maxCount: 1,
