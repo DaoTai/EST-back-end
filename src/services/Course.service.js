@@ -289,7 +289,7 @@ export const getListCoursesByAdmin = async ({ condition, currentPage, perPage })
   }
 
   const total = await Course.count(condition);
-  return { courses: queryCourses, maxPage: Math.round(total / perPage), total };
+  return { courses: queryCourses, maxPage: Math.ceil(total / perPage), total };
 };
 
 // Approve courses => Done
