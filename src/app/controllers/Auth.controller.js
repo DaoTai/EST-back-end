@@ -120,7 +120,6 @@ class AuthController {
       // Nếu user đã có email đăng ký theo app rồi
       if (existed) return res.status(403).json("Email is existed. Please using other emails");
       const result = await verifyEmailByCaptcha(email);
-      console.log("result: ", result);
       return res.status(200).json(result);
     } catch (err) {
       next(err);

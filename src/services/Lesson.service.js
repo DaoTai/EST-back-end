@@ -13,16 +13,9 @@ export const getLessonsByIdCourse = async ({ idCourse, currentPage, perPage = 10
   const total = await Lesson.count({
     course: idCourse,
   });
-  const listLessons = await Lesson.find(
-    {
-      course: idCourse,
-    },
-    {
-      reports: 1,
-      isLaunching: 1,
-      name: 1,
-    }
-  )
+  const listLessons = await Lesson.find({
+    course: idCourse,
+  })
     .skip(perPage * currentPage - perPage)
     .limit(perPage);
   return { listLessons, maxPage: Math.ceil(total / perPage) };
