@@ -246,7 +246,7 @@ export const changeAnswerQuestion = async (idAnswerRecord, newAnswers) => {
 // Tạo ra các bài tập trắc nghiệm dựa vào
 // - Các nghề nghiệp phù hợp của các khoá học đã đăng ký
 // - Các ngôn ngữ lập trình yêu thích của cá nhân
-export const getCustomizeQuestions = async ({ type, idUser }) => {
+export const getCustomizeQuestions = async ({ type, idUser, page = 1, perPage = 20 }) => {
   const checkTypes = ["byFavouriteProgrammingLanguages", "bySuitableJobs"];
 
   if (!checkTypes.includes(type)) {
@@ -310,8 +310,7 @@ export const getCustomizeQuestions = async ({ type, idUser }) => {
     });
   }
 
-  // Lấy ra các lesson có questions dạng trắc nghiệm (category !== code)
-  const listLessons = await Lesson.aggregate([])
+  const getTotalItems = Lesson.aggregate([])
     .match({
       _id: {
         $in: idLessons,
@@ -328,11 +327,37 @@ export const getCustomizeQuestions = async ({ type, idUser }) => {
         $ne: "code",
       },
     })
-    .unwind("questions");
-
+    .unwind("questions")
+    .count("totalItems");
+  // Lấy ra các lesson có questions dạng trắc nghiệm (category !== code)
+  const getLessons = Lesson.aggregate([])
+    .match({
+      _id: {
+        $in: idLessons,
+      },
+    })
+    .lookup({
+      from: "questions",
+      as: "questions",
+      localField: "questions",
+      foreignField: "_id",
+    })
+    .match({
+      "questions.category": {
+        $ne: "code",
+      },
+    })
+    .unwind("questions")
+    .skip(perPage * page - perPage)
+    .limit(perPage);
+  const [listLessons, listTotal] = await Promise.all([getLessons, getTotalItems]);
+  const total = listTotal[0].totalItems;
+  const maxPage = Math.ceil(total / perPage);
   // vì questions là 1 mảng nên có thể tách từng question thành 1 document riêng có cùng _id là id lesson, nếu mảng trống thì bỏ qua
-
   const listQuestions = listLessons.map((lesson) => lesson.questions);
-
-  return listQuestions;
+  return {
+    listQuestions,
+    maxPage,
+    page,
+  };
 };

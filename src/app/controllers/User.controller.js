@@ -343,9 +343,9 @@ class UserController {
   // [GET] user/questions/self-train
   async selfTrainQuestions(req, res, next) {
     try {
-      const { type } = req.query;
+      const { type, page } = req.query;
       if (!type) return res.status(400).json("Type to traing is required");
-      const listQuestions = await getCustomizeQuestions({ idUser: req.user._id, type });
+      const listQuestions = await getCustomizeQuestions({ idUser: req.user._id, type, page });
       return res.status(200).json(listQuestions);
     } catch (error) {
       next(error);

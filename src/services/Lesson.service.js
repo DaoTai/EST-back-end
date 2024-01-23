@@ -135,7 +135,7 @@ export const deleteLesson = async (idLesson) => {
     },
   });
 
-  Promise.all([
+  await Promise.all([
     deletedLesson.deleteVideo(),
     handleDeleteComment,
     handleDeletePassedLesson,
