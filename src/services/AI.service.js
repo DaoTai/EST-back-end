@@ -231,6 +231,12 @@ export const getAvgScoreInRegisteredCoursesByIdUser = async (idUser) => {
 };
 
 export const predictSuitableJobs = async ({ data, myAvgScores }) => {
+  if (Array.isArray(myAvgScores) && myAvgScores.length === 0) {
+    throw new ApiError({
+      statusCode: 400,
+      message: "You have no score!",
+    });
+  }
   try {
     const local = "http://127.0.0.1:5000/predict";
     const product = "https://est-edu-ai.onrender.com/predict";
